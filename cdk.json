@@ -1,0 +1,3 @@
+{
+  "app": "python cdk/kesher_service_cdk/app.py"
+}
