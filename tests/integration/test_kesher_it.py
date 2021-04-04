@@ -18,9 +18,7 @@ from service.dtos.kesher_dto import KesherDto
 @pytest.fixture(scope="module")
 def endpoint_url():
     load_dotenv()
-    stack_name = "Kesher"
-    # load_env_vars(get_stack_name(BASE_NAME))
-    load_env_vars(stack_name)
+    load_env_vars()
     endpoint_url = os.environ['KESHER_API_GW']
     return endpoint_url[:-1]
 

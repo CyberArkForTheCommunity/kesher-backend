@@ -1,15 +1,30 @@
 import os
-
 import boto3
+from git import Repo
 from botocore import xform_name
 
 _ENV = None
+BASE_NAME = "Kesher"
+
+def read_git_branch() -> str:
+    project_path = os.environ['PROJECT_DIR']
+    # load git branch name in development environment
+    repo = Repo(project_path)
+    return repo.active_branch.name
 
 
-def load_env_vars(stack_name) -> dict:
+def get_stack_name() -> str:
+    branch_name = read_git_branch()
+    # remove special characters from branch name
+    branch_name = ''.join(e for e in branch_name if e.isalnum()).capitalize()
+    stack_name: str = f"{BASE_NAME}{branch_name}"
+    # stack_name: str = f"{getpass.getuser().capitalize().replace('.','')}{BASE_NAME}{branch_name}"
+    return stack_name
+
+def load_env_vars() -> dict:
     global _ENV
     if _ENV is None:
-        _ENV = get_env_vars(stack_name)
+        _ENV = get_env_vars(get_stack_name())
 
     # load environment variable
     for key, value in _ENV.items():

@@ -19,15 +19,12 @@ def read_git_branch() -> str:
 
 
 def get_stack_name() -> str:
-    return BASE_NAME
-    """
     branch_name = read_git_branch()
     # remove special characters from branch name
     branch_name = ''.join(e for e in branch_name if e.isalnum()).capitalize()
-    stack_name: str = f"{getpass.getuser().capitalize().replace('.','')}{BASE_NAME}{branch_name}"
+    stack_name: str = f"{BASE_NAME}{branch_name}"
+    # stack_name: str = f"{getpass.getuser().capitalize().replace('.','')}{BASE_NAME}{branch_name}"
     return stack_name
-    """
-
 
 class KesherServiceEnvironment(core.Construct):
     _API_HANDLER_LAMBDA_MEMORY_SIZE = 128
