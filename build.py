@@ -19,10 +19,29 @@ def do_build(consume_dependencies=True, include_dev=False):
     build_dir = Path(pathlib.Path(__file__).parent.absolute()) / '.build'
 
     Path(build_dir).mkdir(parents=True, exist_ok=True)
-    service_requirements_txt: Path = build_dir/'service_requirements.txt'
-    create_requirements_txt(dev_dependencies=['ptvsd'] if include_dev else [], target=service_requirements_txt)
+
+    email_lambda_runtime_deps = ['pandas', 'aws-lambda-powertools', 'pydantic']
+    requirements_txt: Path = build_dir/'admin_submit_service_requirements.txt'
+    create_requirements_txt(runtime_dependencies=email_lambda_runtime_deps, target=requirements_txt)
+    BuildLambdaAsset(include_paths=['cdk/kesher_service_cdk/service_stack/email_services/functions/admin_submit'], 
+                     build_dir=build_dir / 'admin_submit', 
+                     consume_dependencies=consume_dependencies,
+                     requirements_txt=requirements_txt).build()
+
+
+    requirements_txt: Path = build_dir/'teacher_submit_service_requirements.txt'
+    create_requirements_txt(runtime_dependencies=email_lambda_runtime_deps, target=requirements_txt)
+    BuildLambdaAsset(include_paths=['cdk/kesher_service_cdk/service_stack/email_services/functions/teacher_submit'], 
+                     build_dir=build_dir / 'teacher_submit', 
+                     consume_dependencies=consume_dependencies,
+                     requirements_txt=requirements_txt).build()
+
+
+    requirements_txt: Path = build_dir/'service_requirements.txt'
+    create_requirements_txt(dev_dependencies=['ptvsd'] if include_dev else [], target=requirements_txt)
     BuildLambdaAsset(include_paths=['service'], build_dir=build_dir / 'service', consume_dependencies=consume_dependencies,
-                     requirements_txt=service_requirements_txt).build()
+                     requirements_txt=requirements_txt).build()
+
 
 
 if __name__ == "__main__":
