@@ -32,6 +32,7 @@ aws-lambda-context = "*"
 aws-cdk-aws-ses = "*"
 aws-cdk-aws-ses-actions = "*"
 pandas = "*"
+aws-cdk-aws-route53 = "*"
 
 [requires]
 python_version = "3.8"
