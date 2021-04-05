@@ -31,6 +31,7 @@ setup(
     install_requires=[
         "aws-cdk.aws-iam>=1.96.0",
         "aws-cdk.aws-kms>=1.96.0",
+        "aws-cdk.aws-rds>=1.96.0",
         "aws-cdk.aws-s3>=1.96.0",
         "aws-cdk.core>=1.96.0",
         "aws-cdk.aws-cognito>=1.96.0",

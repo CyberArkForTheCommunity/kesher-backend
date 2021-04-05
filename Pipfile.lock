@@ -300,6 +300,13 @@
             ],
             "version": "==1.96.0"
         },
+        "aws-cdk.aws-rds": {
+            "hashes": [
+                "sha256:0bbfd50bb3089d0e4be610f8a47199af336f3ba1c3d851668ce8daa2ab1e1d08",
+                "sha256:f4bc7ccbce81b2b378c8444ee8e22f8539e539b2e7b2a2628aee4ae71fd2b3b9"
+            ],
+            "version": "==1.96.0"
+        },
         "aws-cdk.aws-route53": {
             "hashes": [
                 "sha256:8f2143878feddf256a2e6a31c87e301ec18e563e1c6c7c97de42af1b15b9d914",
@@ -318,6 +325,20 @@
             "hashes": [
                 "sha256:72ad074338186826e42eb6c908a115a71f7727dfe0c80b950bea26205d56c653",
                 "sha256:aadefd75b79785dbf32d8f70a612209b0dbc57af92bab9805bccad60c131cfb2"
+            ],
+            "version": "==1.96.0"
+        },
+        "aws-cdk.aws-sam": {
+            "hashes": [
+                "sha256:040ea6ed2a48b3aca81e509aaf2a7740b69c22f64325c6cb4ce951c3521977a3",
+                "sha256:fabb29199288f987990f8e4b2a6d72dc255354f8985cb201255465da0cbfe326"
+            ],
+            "version": "==1.96.0"
+        },
+        "aws-cdk.aws-secretsmanager": {
+            "hashes": [
+                "sha256:5bfcc055024c335bea1b3ea4c6fac2094b464f96d2b470270f51a7c1a3e21802",
+                "sha256:c87995b93038092886b9f435aa12128242c9894bb3512365822b898ff6f18aa2"
             ],
             "version": "==1.96.0"
         },
