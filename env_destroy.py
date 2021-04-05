@@ -24,8 +24,11 @@ def main():
     args = parser.parse_args()
 
     if args.clean_bucket:
-        # TODO Implement
-        pass
+        bucket = get_stack_output("EmailBucket")
+        if bucket:
+            print('Deleting bucket content...')
+            os.system(f'aws s3 rb s3://{bucket} --force')
+            
 
     print("cdk destroy...")
     rc = os.system(f"cdk destroy")

@@ -50,6 +50,9 @@ class EmailServices(core.Construct):
             )
         )
 
+        bucket_name_output = core.CfnOutput(self, id="EmailBucket", value=emails_bucket.bucket_name)
+        bucket_name_output.override_logical_id("EmailBucket")
+
         emails_bucket.grant_read_write(admin_submit_lambda)
         emails_bucket.grant_read_write(teacher_submit_lambda)
 
