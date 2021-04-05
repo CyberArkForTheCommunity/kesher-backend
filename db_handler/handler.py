@@ -1,6 +1,7 @@
 import os
 import boto3
 from typing import Optional
+from mysql.connector import MySQLConnection
 import mysql.connector
 
 from aws_lambda_powertools.utilities import parameters as ssm_params
@@ -12,7 +13,7 @@ REGION = 'us-east-1'
 DBNAME = 'Kesher'
 PASSWORD = 'Cyber123'
 
-CONENCTION = None
+CONENCTION: MySQLConnection = None
 
 def get_user_password() -> Optional[str]:
     try:
@@ -23,7 +24,7 @@ def get_user_password() -> Optional[str]:
     return client_name
 
 
-def create_connection_to_rds():
+def create_connection_to_rds() -> MySQLConnection:
     session = boto3.Session()
     client = session.client('rds')
     token = client.generate_db_auth_token(DBHostname=ENDPOINT, Port=PORT, DBUsername=USR, Region=REGION)
