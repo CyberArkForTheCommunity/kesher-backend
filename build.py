@@ -23,15 +23,15 @@ def do_build(consume_dependencies=True, include_dev=False):
     email_lambda_runtime_deps = ['pandas', 'aws-lambda-powertools', 'pydantic']
     requirements_txt: Path = build_dir/'email_functions_service_requirements.txt'
     create_requirements_txt(runtime_dependencies=email_lambda_runtime_deps, target=requirements_txt)
-    BuildLambdaAsset(include_paths=['cdk/kesher_service_cdk/service_stack/email_services/email_functions'], 
-                     build_dir=build_dir/'email_functions', 
+    BuildLambdaAsset(include_paths=['cdk/kesher_service_cdk/service_stack/email_services/functions'], 
+                     build_dir=build_dir/'email_services', 
                      consume_dependencies=consume_dependencies,
                      requirements_txt=requirements_txt).build()
 
 
     requirements_txt: Path = build_dir/'service_requirements.txt'
     create_requirements_txt(dev_dependencies=['ptvsd'] if include_dev else [], target=requirements_txt)
-    BuildLambdaAsset(include_paths=['service'], build_dir=build_dir / 'service', consume_dependencies=consume_dependencies,
+    BuildLambdaAsset(include_paths=['service'], build_dir=build_dir/'service', consume_dependencies=consume_dependencies,
                      requirements_txt=requirements_txt).build()
 
 

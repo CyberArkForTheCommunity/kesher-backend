@@ -67,7 +67,7 @@ def main():
         print(f"cdk deploy failed with return code: {rc}")
         exit(1)
 
-    user_pool_id = users.get_user_pool_id(get_stack_name())
+    user_pool_id = users.get_user_pool_id(f'Roy{get_stack_name()}')
 
     password = os.environ.get('DEFAULT_USER_PASSWORD', default='Password123')
     email = os.environ.get('USER_EMAIL')

@@ -10,7 +10,7 @@ from kesher_service_cdk.service_stack.constants import KESHER_DOMAIN_NAME
 class EmailServices(core.Construct):
 
 
-    _LAMBDA_ASSET_DIR = ".build/email_functions"
+    _LAMBDA_ASSET_DIR = ".build/email_services"
 
     # pylint: disable=redefined-builtin,invalid-name
     def __init__(self, scope: core.Construct, id: str, lambda_role: iam.Role) -> None:
@@ -21,7 +21,7 @@ class EmailServices(core.Construct):
             'AdminDataSubmission',
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=aws_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
-            handler='email_functions.handler.admin_submit',
+            handler='functions.handler.admin_submit',
             role=lambda_role,
         )
 
@@ -30,7 +30,7 @@ class EmailServices(core.Construct):
             'TeacherDataSubmission',
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=aws_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
-            handler='email_functions.handler.teacher_submit',
+            handler='functions.handler.teacher_submit',
             role=lambda_role,
         )
 
