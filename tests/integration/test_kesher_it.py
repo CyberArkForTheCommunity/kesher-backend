@@ -30,81 +30,73 @@ def auth_headers():
     return add_auth_header()
 
 
-def test_get_categories__success():
-    sub_categories = []
-    report_categories = []
-    sub_categories.append(SubCategory(subcategory_id=34, subcategory_name="mock_sub_category"))
-    report_categories.append(
-        Category(category_id=123, category_name="mock_cat_name", sub_categories=sub_categories))
-
-    print("report_categories: ", report_categories)
-    print("report_categories json: ", report_categories.schema_json(2))
-
-
-def test_get_categories_list(endpoint_url, auth_headers):
+def test_get_categories_list__success(endpoint_url, auth_headers):
     headers = {"Content-Type": "application/json"}
     headers.update(auth_headers)
     response = requests.api.get(url=f"{endpoint_url}/categories", headers=headers)
     print(f"response: {response}")
+    print(f"response: {response.content}")
+    assert response.status_code == HTTPStatus.OK
+    assert response.content is not None
 
 
 #TODO: remove
-def test_create_kesher(endpoint_url, auth_headers):
-    # when create entity
-    kesher_dto: KesherDto = KesherDto(name=random_string())
-    headers = {"Content-Type": "application/json"}
-    headers.update(auth_headers)
-    response = requests.api.post(url=f"{endpoint_url}/kesher", headers=headers, json=kesher_dto.dict())
-
-    # then assert created
-    assert response.status_code == HTTPStatus.CREATED
-    # assert created_date & updated_date was initialize
-    resource = json.loads(response.content)
-    assert resource['name'] == kesher_dto.name
-    day_seconds = 24 * 60 * 60
-    now = datetime.now().timestamp()
-    assert now - day_seconds < resource['created_date'] < now + day_seconds
-    assert resource['created_date'] == resource['updated_date']
-
-    # when get the created entity
-    response = requests.api.get(url=f"{endpoint_url}/kesher/{kesher_dto.name}", headers=auth_headers)
-
-    # then assert all fields saved successfully
-    assert response.status_code == HTTPStatus.OK
-    resource = json.loads(response.content)
-    assert resource['name'] == kesher_dto.name
-    assert now - day_seconds < resource['created_date'] < now + day_seconds
-    assert resource['created_date'] == resource['updated_date']
-
-
-def test_get_kesher(endpoint_url, auth_headers):
-    # read by name
-    response = requests.api.get(url=f"{endpoint_url}/kesher/Alex", headers=auth_headers)
-    assert response.status_code == HTTPStatus.OK
-    resource = json.loads(response.content)
-    assert resource['name'] == "Alex"
-    day_seconds = 24 * 60 * 60
-    now = datetime.now().timestamp()
-    assert now - day_seconds < resource['created_date'] < now + day_seconds
-    assert resource['created_date'] == resource['updated_date']
-
-
-def test_update_kesher(endpoint_url, auth_headers):
-    # when create entity
-    kesher_dto: KesherDto = KesherDto(name=random_string())
-    headers = {"Content-Type": "application/json"}
-    headers.update(auth_headers)
-    requests.api.post(url=f"{endpoint_url}/kesher", headers=headers, json=kesher_dto.dict())
-
-    # then update the entity
-    response = requests.api.put(url=f"{endpoint_url}/kesher/{kesher_dto.name}", headers=headers,
-                                json=kesher_dto.dict())
-
-    # then assert
-    assert response.status_code == HTTPStatus.OK
-    resource = json.loads(response.content)
-    day_seconds = 24 * 60 * 60
-    now = datetime.now().timestamp()
-    assert now - day_seconds < resource['created_date'] < now + day_seconds
-    assert now - day_seconds < resource['updated_date'] < now + day_seconds
-    assert resource['created_date'] < resource['updated_date']
+# def test_create_kesher(endpoint_url, auth_headers):
+#     # when create entity
+#     kesher_dto: KesherDto = KesherDto(name=random_string())
+#     headers = {"Content-Type": "application/json"}
+#     headers.update(auth_headers)
+#     response = requests.api.post(url=f"{endpoint_url}/kesher", headers=headers, json=kesher_dto.dict())
+#
+#     # then assert created
+#     assert response.status_code == HTTPStatus.CREATED
+#     # assert created_date & updated_date was initialize
+#     resource = json.loads(response.content)
+#     assert resource['name'] == kesher_dto.name
+#     day_seconds = 24 * 60 * 60
+#     now = datetime.now().timestamp()
+#     assert now - day_seconds < resource['created_date'] < now + day_seconds
+#     assert resource['created_date'] == resource['updated_date']
+#
+#     # when get the created entity
+#     response = requests.api.get(url=f"{endpoint_url}/kesher/{kesher_dto.name}", headers=auth_headers)
+#
+#     # then assert all fields saved successfully
+#     assert response.status_code == HTTPStatus.OK
+#     resource = json.loads(response.content)
+#     assert resource['name'] == kesher_dto.name
+#     assert now - day_seconds < resource['created_date'] < now + day_seconds
+#     assert resource['created_date'] == resource['updated_date']
+#
+#
+# def test_get_kesher(endpoint_url, auth_headers):
+#     # read by name
+#     response = requests.api.get(url=f"{endpoint_url}/kesher/Alex", headers=auth_headers)
+#     assert response.status_code == HTTPStatus.OK
+#     resource = json.loads(response.content)
+#     assert resource['name'] == "Alex"
+#     day_seconds = 24 * 60 * 60
+#     now = datetime.now().timestamp()
+#     assert now - day_seconds < resource['created_date'] < now + day_seconds
+#     assert resource['created_date'] == resource['updated_date']
+#
+#
+# def test_update_kesher(endpoint_url, auth_headers):
+#     # when create entity
+#     kesher_dto: KesherDto = KesherDto(name=random_string())
+#     headers = {"Content-Type": "application/json"}
+#     headers.update(auth_headers)
+#     requests.api.post(url=f"{endpoint_url}/kesher", headers=headers, json=kesher_dto.dict())
+#
+#     # then update the entity
+#     response = requests.api.put(url=f"{endpoint_url}/kesher/{kesher_dto.name}", headers=headers,
+#                                 json=kesher_dto.dict())
+#
+#     # then assert
+#     assert response.status_code == HTTPStatus.OK
+#     resource = json.loads(response.content)
+#     day_seconds = 24 * 60 * 60
+#     now = datetime.now().timestamp()
+#     assert now - day_seconds < resource['created_date'] < now + day_seconds
+#     assert now - day_seconds < resource['updated_date'] < now + day_seconds
+#     assert resource['created_date'] < resource['updated_date']

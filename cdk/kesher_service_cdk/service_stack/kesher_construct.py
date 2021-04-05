@@ -64,8 +64,10 @@ class KesherServiceEnvironment(core.Construct):
                                                            description="This service handles kesher")
         endpoint_output = core.CfnOutput(self, id="KesherApiGw", value=self.rest_api.url)
         endpoint_output.override_logical_id("KesherApiGw")
+
         self.api_authorizer: apigw.CfnAuthorizer = self.__create_api_authorizer(user_pool_arn=user_pool_arn,
                                                                                 api=self.rest_api)
+
         self.api_resource: apigw.Resource = self.rest_api.root.add_resource("api")
 
         self._environment = {
@@ -91,7 +93,7 @@ class KesherServiceEnvironment(core.Construct):
         self.__add_lambda_api(lambda_name='GetReportCategories',
                               handler_method='service.report_category_handler.get_report_categories_list',
                               resource=categories_resource, http_method="GET",
-                              member_name="get_kesher_api_lambda")
+                              member_name="get_categories_api_lambda")
 
     def _add_children_api(self):
         children_resource: apigw.Resource = self.api_resource.add_resource("children")
@@ -140,7 +142,8 @@ class KesherServiceEnvironment(core.Construct):
         method = resource.add_method(
             http_method=http_method,
             integration=integration,
-            authorization_type=apigw.AuthorizationType.COGNITO,
-        )
+            authorization_type=apigw.AuthorizationType.COGNITO)
+
         method_resource: apigw.Resource = method.node.find_child("Resource")
+
         method_resource.add_property_override("AuthorizerId", {"Ref": authorizer.logical_id})
