@@ -5,7 +5,7 @@ from logging import Logger
 from service.response_utils import build_error_response, build_response
 
 
-# GET /kesher/{name}
+# GET /api/children
 @Logger.inject_lambda_context(log_event=True)
 def get_children(event: dict, context: LambdaContext) -> dict:
     # if "pathParameters" not in event or "name" not in event["pathParameters"]:
