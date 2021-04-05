@@ -4,6 +4,7 @@ import aws_cdk.aws_ses_actions as ses_actions
 import aws_cdk.aws_lambda as aws_lambda
 import aws_cdk.aws_iam as iam
 
+from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 from kesher_service_cdk.service_stack.constants import KESHER_DOMAIN_NAME
 
 class EmailServices(core.Construct):
@@ -34,12 +35,15 @@ class EmailServices(core.Construct):
         )
 
         ses.ReceiptRuleSet(scope=self, id="DataSubmissionReceiptRuleSet",
+            receipt_rule_set_name=f'{get_stack_name()}RecieptRules',
             rules=[
                 ses.ReceiptRuleOptions(
+                    receipt_rule_name=f'{get_stack_name()}AdminSubmitRule',
                     recipients=[f'adminsubmit@{KESHER_DOMAIN_NAME}'],
                     actions=[ses_actions.Lambda(function=admin_submit_lambda)]
                 ),
                 ses.ReceiptRuleOptions(
+                    receipt_rule_name=f'{get_stack_name()}TeacherSubmitRule',
                     recipients=[f'teachersubmit@{KESHER_DOMAIN_NAME}'],
                     actions=[ses_actions.Lambda(function=teacher_submit_lambda)]
                 )

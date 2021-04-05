@@ -10,7 +10,7 @@ from tests.helpers.environment_handler import load_env_vars
 from tests.helpers.random_utils import random_string
 from tests.helpers.cognito_auth_util import add_auth_header
 
-# from cdk.kesher_service_cdk.service_stack.kesher_construct import get_stack_name
+# from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 # from kesher_service_cdk.service_stack.constants import BASE_NAME
 from service.dtos.kesher_dto import KesherDto
 

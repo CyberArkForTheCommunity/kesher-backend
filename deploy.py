@@ -8,7 +8,7 @@ from kesher_service_cdk.service_stack import constants
 from boto3 import session
 from pathlib import Path
 from dotenv import load_dotenv
-from kesher_service_cdk.service_stack.kesher_construct import get_stack_name
+from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 from build import do_build
 from deploy import users
 

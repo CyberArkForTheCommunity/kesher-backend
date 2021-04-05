@@ -5,7 +5,7 @@
 import os
 from aws_cdk import core
 from boto3 import client, session
-from kesher_service_cdk.service_stack.kesher_construct import get_stack_name
+from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 from kesher_service_cdk.service_stack.kesher_stack import KesherStack
 from kesher_service_cdk.service_stack.constants import BASE_NAME
 
