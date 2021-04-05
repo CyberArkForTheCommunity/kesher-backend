@@ -102,7 +102,7 @@ class BuildLambdaAsset:
             mounts=[
                 Mount(target="/var/task", source=self._build_dir.as_posix(), type="bind", consistency="delegated"),
                 Mount(target="/root/.cache", source=self._cache_dir.as_posix(), type="bind", consistency="delegated"),
-                Mount(target="/root/.netrc", source=f"{str(Path.home())}/.netrc", type="bind", consistency="delegated", read_only=True)
+                #Mount(target="/root/.netrc", source=f"{str(Path.home())}/.netrc", type="bind", consistency="delegated", read_only=True)
             ],
             user=0,
             detach=True,
