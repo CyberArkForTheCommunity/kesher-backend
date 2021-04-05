@@ -34,7 +34,7 @@ class EmailServices(core.Construct):
             role=lambda_role,
         )
 
-        ses.ReceiptRuleSet(scope=self, id="DataSubmissionReceiptRuleSet",
+        ruleset_name = ses.ReceiptRuleSet(scope=self, id="DataSubmissionReceiptRuleSet",
             receipt_rule_set_name=f'{get_stack_name()}RecieptRules',
             rules=[
                 ses.ReceiptRuleOptions(
@@ -49,3 +49,6 @@ class EmailServices(core.Construct):
                 )
             ]
         )
+
+        ruleset_name_output = core.CfnOutput(self, id="RuleSetName", value=ruleset_name.receipt_rule_set_name)
+        ruleset_name_output.override_logical_id("RuleSetName")
