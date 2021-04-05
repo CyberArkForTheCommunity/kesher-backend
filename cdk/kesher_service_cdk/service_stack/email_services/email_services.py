@@ -3,6 +3,7 @@ import aws_cdk.aws_ses as ses
 import aws_cdk.aws_ses_actions as ses_actions
 import aws_cdk.aws_lambda as aws_lambda
 import aws_cdk.aws_iam as iam
+import aws_cdk.aws_s3 as s3
 
 from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 from kesher_service_cdk.service_stack.constants import KESHER_DOMAIN_NAME
@@ -18,7 +19,7 @@ class EmailServices(core.Construct):
 
         admin_submit_lambda = aws_lambda.Function(
             self,
-            'AdminDataSubmission',
+            'AdminDataSubmit',
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=aws_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
             handler='functions.handler.admin_submit',
@@ -27,12 +28,31 @@ class EmailServices(core.Construct):
 
         teacher_submit_lambda = aws_lambda.Function(
             self,
-            'TeacherDataSubmission',
+            'TeacherDataSubmit',
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=aws_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
             handler='functions.handler.teacher_submit',
             role=lambda_role,
         )
+
+        emails_bucket = s3.Bucket(
+            self,
+            f'{get_stack_name()}EmailsBucket',
+            removal_policy=core.RemovalPolicy.DESTROY,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+        )
+
+        emails_bucket.add_to_resource_policy(
+            iam.PolicyStatement(actions=['s3:PutObject'], 
+                                resources=[f'arn:aws:s3:::{emails_bucket.bucket_name}/*'],
+                                principals=[iam.ServicePrincipal('ses.amazonaws.com')],
+                                conditions={ "StringEquals": { "aws:Referer": core.Stack.of(self).account } }
+            )
+        )
+
+        emails_bucket.grant_read_write(admin_submit_lambda)
+        emails_bucket.grant_read_write(teacher_submit_lambda)
+
 
         ruleset_name = ses.ReceiptRuleSet(scope=self, id="DataSubmissionReceiptRuleSet",
             receipt_rule_set_name=f'{get_stack_name()}RecieptRules',
@@ -40,12 +60,18 @@ class EmailServices(core.Construct):
                 ses.ReceiptRuleOptions(
                     receipt_rule_name=f'{get_stack_name()}AdminSubmitRule',
                     recipients=[f'adminsubmit@{KESHER_DOMAIN_NAME}'],
-                    actions=[ses_actions.Lambda(function=admin_submit_lambda)]
+                    actions=[
+                        ses_actions.S3(bucket=emails_bucket, object_key_prefix="AdminIncomingEmail"), 
+                        ses_actions.Lambda(function=admin_submit_lambda)
+                    ],
                 ),
                 ses.ReceiptRuleOptions(
                     receipt_rule_name=f'{get_stack_name()}TeacherSubmitRule',
                     recipients=[f'teachersubmit@{KESHER_DOMAIN_NAME}'],
-                    actions=[ses_actions.Lambda(function=teacher_submit_lambda)]
+                    actions=[
+                        ses_actions.S3(bucket=emails_bucket, object_key_prefix="TeacherIncomingEmail"), 
+                        ses_actions.Lambda(function=teacher_submit_lambda),
+                    ]
                 )
             ]
         )

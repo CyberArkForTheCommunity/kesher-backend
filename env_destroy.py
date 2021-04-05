@@ -1,11 +1,45 @@
-# No stack_utils, get code or simple call cdk destroy
+#!/usr/bin/env python
+import argparse
+import getpass
+import os
+import random
+import string
+from kesher_service_cdk.service_stack import constants
+import boto3
+from boto3 import session
+from pathlib import Path
+from dotenv import load_dotenv
+from kesher_service_cdk.service_stack.stack_utils import get_stack_name
+from build import do_build
+from deploy import users
 
-# #!/usr/bin/env python
-# # pylint: disable = print-used
-# import os
-# from stack_utils import environment
-# from kesher_service_cdk.service_stack.constants import BASE_NAME
 
-# # pylint: disable=invalid-name
-# project_path = os.path.abspath(os.path.dirname(__file__))
-# environment.destroy(project_path=project_path, base_stack_name=BASE_NAME)
+PROJECT_DIR_KEY = 'PROJECT_DIR'
+
+
+def main():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--clean-bucket', nargs='?', const=True, help="Delete bucket items before destruction")
+    args = parser.parse_args()
+
+    if args.clean_bucket:
+        # TODO Implement
+        pass
+
+    print("cdk destroy...")
+    rc = os.system(f"cdk destroy")
+    if rc:
+        print(f"cdk destroy failed with return code: {rc}")
+        exit(1)
+
+
+def get_stack_output(output_key: str) -> str:
+    cloudformation = boto3.client('cloudformation')
+    response = cloudformation.describe_stacks(StackName=get_stack_name())
+    outputs = response['Stacks'][0]['Outputs']
+    output_value = [output['OutputValue'] for output in outputs if output['OutputKey'] == output_key]
+    return output_value[0] if output_value else None
+
+if __name__ == '__main__':
+    main()

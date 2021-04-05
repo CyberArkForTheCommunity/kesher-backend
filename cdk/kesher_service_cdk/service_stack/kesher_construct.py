@@ -30,7 +30,7 @@ class KesherServiceEnvironment(core.Construct):
                     ])
             })
 
-        EmailServices(scope=self, id="EmailServices", lambda_role=self.service_role)
+        EmailServices(scope=self, id="Email", lambda_role=self.service_role)
 
         role_output = core.CfnOutput(self, id="KesherServiceRoleArn", value=self.service_role.role_arn)
         role_output.override_logical_id("KesherServiceRoleArn")

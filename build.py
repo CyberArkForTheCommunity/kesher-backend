@@ -20,7 +20,7 @@ def do_build(consume_dependencies=True, include_dev=False):
 
     Path(build_dir).mkdir(parents=True, exist_ok=True)
 
-    email_lambda_runtime_deps = ['pandas', 'aws-lambda-powertools', 'pydantic']
+    email_lambda_runtime_deps = ['pandas', 'aws-lambda-powertools', 'pydantic', 'aws-lambda-context']
     requirements_txt: Path = build_dir/'email_functions_service_requirements.txt'
     create_requirements_txt(runtime_dependencies=email_lambda_runtime_deps, target=requirements_txt)
     BuildLambdaAsset(include_paths=['cdk/kesher_service_cdk/service_stack/email_services/functions'], 
