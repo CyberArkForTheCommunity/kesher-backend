@@ -24,6 +24,9 @@ def do_build(consume_dependencies=True, include_dev=False):
     BuildLambdaAsset(include_paths=['service'], build_dir=build_dir / 'service', consume_dependencies=consume_dependencies,
                      requirements_txt=service_requirements_txt).build()
 
-
+    db_requirements_txt: Path = build_dir/'db_requirements_txt.txt'
+    create_requirements_txt(dev_dependencies=['ptvsd'] if include_dev else [], target=db_requirements_txt)
+    BuildLambdaAsset(include_paths=['service'], build_dir=build_dir / 'db_handler', consume_dependencies=consume_dependencies,
+                     requirements_txt=service_requirements_txt).build()
 if __name__ == "__main__":
     build()

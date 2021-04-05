@@ -36,6 +36,7 @@ setup(
         "aws-cdk.aws-cognito>=1.96.0",
         "aws-cdk.aws_apigateway>=1.96.0",
         "aws-cdk.aws-dynamodb>=1.96.0"
+        "aws-cdk.aws-rds>=1.96.0"
     ],
     python_requires=">=3.8",
 )

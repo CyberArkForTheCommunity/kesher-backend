@@ -29,6 +29,7 @@ boto3 = ">=1.12.0"
 pydantic = "*"
 aws-lambda-powertools = "*"
 aws-lambda-context = "*"
+mysql-connector-python = "*"
 
 [requires]
 python_version = "3.8"
