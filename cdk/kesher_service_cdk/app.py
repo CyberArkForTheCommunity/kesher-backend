@@ -13,7 +13,7 @@ account = client('sts').get_caller_identity()['Account']
 region = session.Session().region_name
 app = core.App()
 kesher_stack = KesherStack(
-    app, f'Roy{get_stack_name()}',
+    app, get_stack_name(),
     env=core.Environment(account=os.environ.get("AWS_DEFAULT_ACCOUNT", account), region=os.environ.get("AWS_DEFAULT_REGION", region)))
 
 app.synth()
