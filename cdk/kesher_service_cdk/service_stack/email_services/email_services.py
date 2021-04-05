@@ -4,10 +4,12 @@ import aws_cdk.aws_ses_actions as ses_actions
 import aws_cdk.aws_lambda as aws_lambda
 import aws_cdk.aws_iam as iam
 
-from cdk.kesher_service_cdk.service_stack.constants import KESHER_DOMAIN_NAME
+from kesher_service_cdk.service_stack.constants import KESHER_DOMAIN_NAME
 
 class EmailServices(core.Construct):
 
+
+    _LAMBDA_ASSET_DIR = ".build/email_functions"
 
     # pylint: disable=redefined-builtin,invalid-name
     def __init__(self, scope: core.Construct, id: str, lambda_role: iam.Role) -> None:
@@ -18,7 +20,7 @@ class EmailServices(core.Construct):
             'AdminDataSubmission',
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=aws_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
-            handler='admin_submit.handler.handler',
+            handler='email_functions.handler.admin_submit',
             role=lambda_role,
         )
 
@@ -27,7 +29,7 @@ class EmailServices(core.Construct):
             'TeacherDataSubmission',
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=aws_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
-            handler='teacher_submit.handler.handler',
+            handler='email_functions.handler.teacher_submit',
             role=lambda_role,
         )
 
@@ -35,12 +37,11 @@ class EmailServices(core.Construct):
             rules=[
                 ses.ReceiptRuleOptions(
                     recipients=[f'adminsubmit@{KESHER_DOMAIN_NAME}'],
-                    actions=[ses_actions.Lambda(admin_submit_lambda)]
+                    actions=[ses_actions.Lambda(function=admin_submit_lambda)]
                 ),
                 ses.ReceiptRuleOptions(
                     recipients=[f'teachersubmit@{KESHER_DOMAIN_NAME}'],
-                    actions=[ses_actions.Lambda(teacher_submit_lambda)]
+                    actions=[ses_actions.Lambda(function=teacher_submit_lambda)]
                 )
             ]
         )
-

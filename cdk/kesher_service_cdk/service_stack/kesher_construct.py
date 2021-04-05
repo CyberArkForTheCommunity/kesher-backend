@@ -6,6 +6,7 @@ import getpass
 from kesher_service_cdk.service_stack.constants import BASE_NAME
 from aws_cdk.aws_apigateway import Resource
 from aws_cdk import (core, aws_iam as iam, aws_apigateway as apigw, aws_lambda as _lambda, aws_dynamodb)
+from kesher_service_cdk.service_stack.email_services.email_services import EmailServices
 
 sys.path.append(os.getcwd())
 
@@ -45,6 +46,8 @@ class KesherServiceEnvironment(core.Construct):
                                             resources=["arn:aws:logs:*:*:*"], effect=iam.Effect.ALLOW)
                     ])
             })
+
+        EmailServices(scope=self, id="EmailServices", lambda_role=self.service_role)
 
         role_output = core.CfnOutput(self, id="KesherServiceRoleArn", value=self.service_role.role_arn)
         role_output.override_logical_id("KesherServiceRoleArn")
