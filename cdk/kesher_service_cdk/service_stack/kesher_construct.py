@@ -12,7 +12,6 @@ sys.path.append(os.getcwd())
 
 
 def read_git_branch() -> str:
-
     project_path = os.environ['PROJECT_DIR']
     # load git branch name in development environment
     repo = Repo(project_path)
@@ -26,6 +25,7 @@ def get_stack_name() -> str:
     stack_name: str = f"{BASE_NAME}{branch_name}"
     # stack_name: str = f"{getpass.getuser().capitalize().replace('.','')}{BASE_NAME}{branch_name}"
     return stack_name
+
 
 class KesherServiceEnvironment(core.Construct):
     _API_HANDLER_LAMBDA_MEMORY_SIZE = 128
@@ -42,8 +42,9 @@ class KesherServiceEnvironment(core.Construct):
             self, "KesherServiceRole", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"), inline_policies={
                 "KesherServicePolicy":
                     iam.PolicyDocument(statements=[
-                        iam.PolicyStatement(actions=["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
-                                            resources=["arn:aws:logs:*:*:*"], effect=iam.Effect.ALLOW)
+                        iam.PolicyStatement(
+                            actions=["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+                            resources=["arn:aws:logs:*:*:*"], effect=iam.Effect.ALLOW)
                     ])
             })
 
@@ -63,36 +64,43 @@ class KesherServiceEnvironment(core.Construct):
                                                            description="This service handles kesher")
         endpoint_output = core.CfnOutput(self, id="KesherApiGw", value=self.rest_api.url)
         endpoint_output.override_logical_id("KesherApiGw")
-        self.api_authorizer: apigw.CfnAuthorizer = self.__create_api_authorizer(user_pool_arn=user_pool_arn, api=self.rest_api)
+        self.api_authorizer: apigw.CfnAuthorizer = self.__create_api_authorizer(user_pool_arn=user_pool_arn,
+                                                                                api=self.rest_api)
         self.api_resource: apigw.Resource = self.rest_api.root.add_resource("api")
 
         self._environment = {
             "KESHER_USER_POOL_ARN": user_pool_arn
         }
         self._add_children_api()
+        self._add_report_categories_api()
 
-        # sample kesher resource
-        kesher_resource: apigw.Resource = self.rest_api.root.add_resource("kesher")
-        self.__add_lambda_api(lambda_name='CreateKesher', handler_method='service.handler.create_kesher',
-                        resource=kesher_resource, http_method="POST",
-                        member_name="create_kesher_api_lambda")
+        # self.__add_lambda_api(lambda_name='CreateKesher', handler_method='service.handler.create_kesher',
+        #                 resource=kesher_resource, http_method="POST",
+        #                 member_name="create_kesher_api_lambda")
+        #
+        # self.__add_lambda_api(lambda_name='UpdateKesher', handler_method='service.handler.update_kesher',
+        #                 resource=kesher_name_resource, http_method="PUT",
+        #                 member_name="update_kesher_api_lambda")
+        #
+        # self.__add_lambda_api(lambda_name='GetKesher', handler_method='service.handler.get_kesher',
+        #                 resource=kesher_name_resource, http_method="GET",
+        #                 member_name="get_kesher_api_lambda")
 
-        kesher_name_resource = kesher_resource.add_resource("{name}")
-        self.__add_lambda_api(lambda_name='UpdateKesher', handler_method='service.handler.update_kesher',
-                        resource=kesher_name_resource, http_method="PUT",
-                        member_name="update_kesher_api_lambda")
-        self.__add_lambda_api(lambda_name='GetKesher', handler_method='service.handler.get_kesher',
-                        resource=kesher_name_resource, http_method="GET",
-                        member_name="get_kesher_api_lambda")
+    def _add_report_categories_api(self):
+        categories_resource: apigw.Resource = self.rest_api.root.add_resource("categories")
+        self.__add_lambda_api(lambda_name='GetReportCategories',
+                              handler_method='service.report_category_handler.get_report_categories_list',
+                              resource=categories_resource, http_method="GET",
+                              member_name="get_kesher_api_lambda")
 
     def _add_children_api(self):
         children_resource: apigw.Resource = self.api_resource.add_resource("children")
         self.__add_lambda_api(lambda_name='GetChildren', handler_method='service.children_handler.get_children',
-                        resource=children_resource, http_method="GET",
-                        member_name="get_children_api_lambda")
+                              resource=children_resource, http_method="GET",
+                              member_name="get_children_api_lambda")
 
-
-    def __add_lambda_api(self, lambda_name: str, handler_method: str, resource: Resource, http_method: str, member_name: str,
+    def __add_lambda_api(self, lambda_name: str, handler_method: str, resource: Resource, http_method: str,
+                         member_name: str,
                          description: str = ''):
         new_api_lambda = \
             self.__create_lambda_function(lambda_name=f'{lambda_name}Api',
@@ -101,7 +109,9 @@ class KesherServiceEnvironment(core.Construct):
                                           environment=self._environment,
                                           description=description)
 
-        self.__add_resource_method(resource=resource, http_method=http_method, integration=apigw.LambdaIntegration(handler=new_api_lambda), authorizer=self.api_authorizer)
+        self.__add_resource_method(resource=resource, http_method=http_method,
+                                   integration=apigw.LambdaIntegration(handler=new_api_lambda),
+                                   authorizer=self.api_authorizer)
 
         cfn_res: core.CfnResource = new_api_lambda.node.default_child
         cfn_res.override_logical_id(lambda_name)
@@ -109,15 +119,17 @@ class KesherServiceEnvironment(core.Construct):
         setattr(self, member_name, new_api_lambda)
 
     # pylint: disable = no-value-for-parameter
-    def __create_lambda_function(self, lambda_name: str, handler: str, role: iam.Role, environment: dict, description: str = '',
+    def __create_lambda_function(self, lambda_name: str, handler: str, role: iam.Role, environment: dict,
+                                 description: str = '',
                                  timeout: Duration = Duration.seconds(_API_HANDLER_LAMBDA_TIMEOUT)) -> Function:
-
-        return _lambda.Function(self, lambda_name, runtime=_lambda.Runtime.PYTHON_3_8, code=_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
+        return _lambda.Function(self, lambda_name, runtime=_lambda.Runtime.PYTHON_3_8,
+                                code=_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
                                 handler=handler, role=role, retry_attempts=0, environment=environment, timeout=timeout,
                                 memory_size=self._API_HANDLER_LAMBDA_MEMORY_SIZE, description=description)
 
     def __create_api_authorizer(self, user_pool_arn: str, api: apigw.RestApi) -> apigw.CfnAuthorizer:
-        authorizer = apigw.CfnAuthorizer(scope=self, name="KesherApiAuth", id="KesherApiAuth", type="COGNITO_USER_POOLS",
+        authorizer = apigw.CfnAuthorizer(scope=self, name="KesherApiAuth", id="KesherApiAuth",
+                                         type="COGNITO_USER_POOLS",
                                          provider_arns=[user_pool_arn], rest_api_id=api.rest_api_id,
                                          identity_source="method.request.header.Authorization")
         return authorizer

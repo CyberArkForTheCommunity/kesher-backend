@@ -6,6 +6,8 @@ from datetime import datetime
 from http import HTTPStatus
 import pytest
 from dotenv import load_dotenv
+
+from service.report_category_handler import SubCategory, Category
 from tests.helpers.environment_handler import load_env_vars
 from tests.helpers.random_utils import random_string
 from tests.helpers.cognito_auth_util import add_auth_header
@@ -28,6 +30,25 @@ def auth_headers():
     return add_auth_header()
 
 
+def test_get_categories__success():
+    sub_categories = []
+    report_categories = []
+    sub_categories.append(SubCategory(subcategory_id=34, subcategory_name="mock_sub_category"))
+    report_categories.append(
+        Category(category_id=123, category_name="mock_cat_name", sub_categories=sub_categories))
+
+    print("report_categories: ", report_categories)
+    print("report_categories json: ", report_categories.schema_json(2))
+
+
+def test_get_categories_list(endpoint_url, auth_headers):
+    headers = {"Content-Type": "application/json"}
+    headers.update(auth_headers)
+    response = requests.api.get(url=f"{endpoint_url}/categories", headers=headers)
+    print(f"response: {response}")
+
+
+#TODO: remove
 def test_create_kesher(endpoint_url, auth_headers):
     # when create entity
     kesher_dto: KesherDto = KesherDto(name=random_string())
