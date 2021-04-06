@@ -61,7 +61,7 @@ class KesherServiceEnvironment(core.Construct):
         self.table.grant_read_write_data(self.service_role)
 
         self.rest_api: apigw.LambdaRestApi = apigw.RestApi(self, "kesher-rest-api", rest_api_name="kesher Rest API",
-                                                           description="This service handles kesher")
+                                                           description="This service handles kesher's APIs..")
         endpoint_output = core.CfnOutput(self, id="KesherApiGw", value=self.rest_api.url)
         endpoint_output.override_logical_id("KesherApiGw")
 
@@ -91,12 +91,22 @@ class KesherServiceEnvironment(core.Construct):
 
         child_resource: apigw.Resource = children_resource.add_resource("{child_id}")
         daily_reports_resource = child_resource.add_resource('daily-reports')
-        self.__add_lambda_api(lambda_name='AddChildReport', handler_method='service.children_handler.add_child_report',
+        attendance_resource = child_resource.add_resource('attendance')
+
+        self.__add_lambda_api(lambda_name='AddChildReport',
+                              handler_method='service.children_handler.add_child_report',
                               resource=daily_reports_resource, http_method="POST",
                               member_name="add_child_report_api_lambda")
-        self.__add_lambda_api(lambda_name='GetChildReports', handler_method='service.children_handler.get_child_reports',
+
+        self.__add_lambda_api(lambda_name='GetChildReports',
+                              handler_method='service.children_handler.get_child_reports',
                               resource=daily_reports_resource, http_method="GET",
                               member_name="get_child_reports_api_lambda")
+
+        self.__add_lambda_api(lambda_name='UpdateChileAttendance',
+                              handler_method='service.children_handler.update_child_attendance',
+                              resource=attendance_resource, http_method="POST",
+                              member_name="update_child_attendance")
 
     def __add_lambda_api(self, lambda_name: str, handler_method: str, resource: Resource, http_method: str,
                          member_name: str,

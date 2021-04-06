@@ -10,7 +10,7 @@ from aws_lambda_powertools.logging import logger
 from aws_lambda_context import LambdaContext
 from pydantic import ValidationError
 from aws_lambda_powertools import Logger
-from service.models.child import Child
+from service.models.child import Child, Attendance
 
 logger = Logger()
 
@@ -68,3 +68,23 @@ def get_child_reports(event: dict, context: LambdaContext) -> dict:
     except Exception as err:
         return build_error_response(err)
 
+# POST /api/children/{child_id}/attendance
+@logger.inject_lambda_context(log_event=True)
+def update_child_attendance(event: dict, context: LambdaContext) -> dict:
+    if "pathParameters" not in event or "child_id" not in event["pathParameters"]:
+        return build_response(HTTPStatus.BAD_REQUEST, event)
+
+    try:
+        child_id: str = event["pathParameters"]["child_id"]
+        now: Decimal = Decimal(datetime.now().timestamp())
+        body = event["body"]
+        attendance = Attendance(**body)
+        if attendance.attended:
+            return build_response(HTTPStatus.CREATED, json.dumps("attendance updated"))
+
+        # if for a reason the attended is false, there is notning to update. just return 200 OK
+        return build_response(HTTPStatus.OK, body)
+    except (ValidationError, TypeError) as err:
+        return build_error_response(err, HTTPStatus.BAD_REQUEST)
+    except Exception as err:
+        return build_error_response(err)
