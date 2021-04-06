@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class Child(BaseModel):
     id: str
     first_name: str
@@ -7,4 +8,4 @@ class Child(BaseModel):
 
 
 class Attendance(BaseModel):
-    attended: bool
+    attended: str

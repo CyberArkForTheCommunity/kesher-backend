@@ -33,7 +33,7 @@ def auth_headers():
 def test_get_categories_list__success(endpoint_url, auth_headers):
     headers = {"Content-Type": "application/json"}
     headers.update(auth_headers)
-    response = requests.api.get(url=f"{endpoint_url}/categories", headers=headers)
+    response = requests.api.get(url=f"{endpoint_url}/api/categories", headers=headers)
     print(f"response: {response}")
     print(f"response: {response.content}")
     assert response.status_code == HTTPStatus.OK

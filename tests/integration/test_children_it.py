@@ -55,12 +55,37 @@ def test_get_child_daily_reports(endpoint_url, auth_headers):
     assert len(resource['daily_reports']) > 0
 
 
-def test_update_child_attendance_success(endpoint_url, auth_headers):
-    attendance = Attendance(attended=True)
-    response = requests.api.post(url=f"{endpoint_url}/api/children/12345/attendance",
-                                 headers=auth_headers,
-                                 json=attendance.json())
+def test_update_child_attendance_with_true_success(endpoint_url, auth_headers):
+    attendance = Attendance(attended="true")
+    child_id = 123132
+    response = requests.api.put(url=f"{endpoint_url}/api/children/{child_id}/attendance",
+                                headers=auth_headers,
+                                json=attendance.dict())
 
-    assert response.status_code == HTTPStatus.CREATED
+    assert response.status_code == HTTPStatus.OK
     content = json.loads(response.content)
     assert content == "attendance updated"
+
+
+def test_update_child_attendance_with_false_success(endpoint_url, auth_headers):
+    attendance = Attendance(attended="false")
+    child_id = 123132
+    response = requests.api.put(url=f"{endpoint_url}/api/children/{child_id}/attendance",
+                                headers=auth_headers,
+                                json=attendance.dict())
+
+    assert response.status_code == HTTPStatus.OK
+    content = json.loads(response.content)
+    assert content == "attendance not updated, FALSE is not currently supported"
+
+
+def test_update_child_attendance_with_missing_params__failed(endpoint_url, auth_headers):
+    child_id = 123132
+    response = requests.api.put(url=f"{endpoint_url}/api/children/{child_id}/attendance",
+                                headers=auth_headers,
+                                json={})
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    content = str(response.content)
+    assert "error for Attendance" in content
+    assert "type=value_error.missing" in content
