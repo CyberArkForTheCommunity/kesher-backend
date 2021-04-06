@@ -185,5 +185,3 @@ def upload_s3_object_presigned(source_file: str, object_name: str, bucket_name: 
     if http_response.status_code > 300:
         logger.error(f"Error uploading object with presigned url {http_response.content=}")
         raise Exception(f"Error uploading {object_name=} to {bucket_name=}")
-
-    upload_s3_object_presigned("moshe.txt", "the_object", "keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt")
