@@ -76,18 +76,6 @@ class KesherServiceEnvironment(core.Construct):
         self._add_children_api()
         self._add_report_categories_api()
 
-        # self.__add_lambda_api(lambda_name='CreateKesher', handler_method='service.handler.create_kesher',
-        #                 resource=kesher_resource, http_method="POST",
-        #                 member_name="create_kesher_api_lambda")
-        #
-        # self.__add_lambda_api(lambda_name='UpdateKesher', handler_method='service.handler.update_kesher',
-        #                 resource=kesher_name_resource, http_method="PUT",
-        #                 member_name="update_kesher_api_lambda")
-        #
-        # self.__add_lambda_api(lambda_name='GetKesher', handler_method='service.handler.get_kesher',
-        #                 resource=kesher_name_resource, http_method="GET",
-        #                 member_name="get_kesher_api_lambda")
-
     def _add_report_categories_api(self):
         categories_resource: apigw.Resource = self.rest_api.root.add_resource("categories")
         self.__add_lambda_api(lambda_name='GetReportCategories',
@@ -100,6 +88,15 @@ class KesherServiceEnvironment(core.Construct):
         self.__add_lambda_api(lambda_name='GetChildren', handler_method='service.children_handler.get_children',
                               resource=children_resource, http_method="GET",
                               member_name="get_children_api_lambda")
+
+        child_resource: apigw.Resource = children_resource.add_resource("{child_id}")
+        daily_reports_resource = child_resource.add_resource('daily-reports')
+        self.__add_lambda_api(lambda_name='AddChildReport', handler_method='service.children_handler.add_child_report',
+                              resource=daily_reports_resource, http_method="POST",
+                              member_name="add_child_report_api_lambda")
+        self.__add_lambda_api(lambda_name='GetChildReports', handler_method='service.children_handler.get_child_reports',
+                              resource=daily_reports_resource, http_method="GET",
+                              member_name="get_child_reports_api_lambda")
 
     def __add_lambda_api(self, lambda_name: str, handler_method: str, resource: Resource, http_method: str,
                          member_name: str,
