@@ -18,7 +18,7 @@ class ConnectionToRDS(core.Construct):
         return sts_client.meta.region_name
 
     def _create_rds_connection_lambda(self, id_: str) -> aws_lambda.Function:
-            self.lambda_handler_role = self._create_lambda_role_idaptive('connect_to_rds_role')
+            self.lambda_handler_role = self._create_lambda_role('connect_to_rds_role')
             func = aws_lambda.Function(
                 self,
                 f'{id_}ConnectionToRds',
@@ -38,7 +38,7 @@ class ConnectionToRDS(core.Construct):
             return func
 
 
-    def _create_lambda_role_idaptive(self, role_name: str) -> aws_iam.Role:
+    def _create_lambda_role(self, role_name: str) -> aws_iam.Role:
             role = aws_iam.Role(
                 self,
                 f'{role_name}',
@@ -54,6 +54,7 @@ class ConnectionToRDS(core.Construct):
                         ]),
                 },
                 # add CloudWatch logging policy
-                managed_policies=[aws_iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")],
+                managed_policies=[aws_iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonRDSDataFullAccess"), ],
             )
             return role
