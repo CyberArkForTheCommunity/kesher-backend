@@ -22,7 +22,6 @@ def auth_headers():
     return add_auth_header()
 
 def test_get_children(endpoint_url, auth_headers):
-    # read by name
     response = requests.api.get(url=f"{endpoint_url}/api/children", headers=auth_headers)
     assert response.status_code == HTTPStatus.OK
     resource = json.loads(response.content)
