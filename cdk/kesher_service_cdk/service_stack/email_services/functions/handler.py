@@ -1,6 +1,8 @@
 from http import HTTPStatus
 import os
+from typing import Dict, Tuple
 import requests
+
 
 from aws_lambda_context import LambdaContext
 from aws_lambda_powertools.logging import logger
@@ -32,20 +34,17 @@ def admin_submit(event: dict, context: LambdaContext) -> dict:
 def teacher_submit(event: dict, context: LambdaContext) -> dict:
     try:
         bucket_name = get_env_var(EMAIL_BUCKET_ENV_VAR)
-        # TODO - read email conteמt, extract presigned URL, maybe retry once with a short wait - merge code from Alex
+        sender, presigned_url, attachment_bytes = read_email_content(event)
+        
+        local_file_name = f'{sender}.kindergarten_ids.csv'
+        with open(local_file_name, "wb") as file:
+            file.write(attachment_bytes)
 
-        # Hard code presigned url until url read is implemented 
-        # You can generate a presigned URL for upload by calling create_presigned_post below
-
-        # For example:
-
-        #response = create_presigned_post(bucket_name="keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt", 
-        #                                 object_name="/TeacherSubmissions/email@gmail.com-submission.csv")
-
-        presigned_url = "https://s3.us-east-1.amazonaws.com/keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt%0A/TeacherSubmissions/email%40gmail.com-submission.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAR37OWCTPEKLJW67W%2F20210406%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210406T102402Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=FwoGZXIvYXdzENT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDPMiRKtTT75jAS1X0CLnATw3oM0E%2BQhUhiaNdtGd1cDrHWqQQaTgJnbMrcWoUIpKx0e9E%2FJw2BQyUHPNlTt8EUUkg9RWsmqI5UpdcRuUROaVnFvIxbNnYRJL%2F8wtEb3slj1RoXQvyWn3mkJ6yOyIcYZjzXHjy%2BoptTZDp%2BypKuD%2FcirkrkDZqf%2BNhiGm%2FBnkwAiDj8VEdvqf7tfyoSnteSZ%2BNECNQ9AVZuK2784tFxGVynLYt5D6aLZXRG6JBve4EycSkU0znDtNDx%2B7NhURAFE1qMu4rKPBbjjCdyLWCJJ1%2BINrizP4KSl1rHYtYM4ckIy7R2XG0Si0qK2DBjIrMFKsXc7ll3a24x6tKC9SoOQ%2FW5yrxrQhSNcs00uhfhVA895I6GI8wr4ydw%3D%3D&X-Amz-Signature=116dd8c692c953eff7e254e45705d3fcf702e09ad59111d1e90f56d3a98a732e"
-                
-        # TODO - upload to S3 - bucket name, build obj name from sender 
-        #      - this validates expiration and the tenant identity (we emailed this teached with the link to this specific object in our bucket)
+        upload_s3_object_presigned(source_file=local_file_name, object_name=local_file_name, bucket_name=bucket_name)
+        # by upload using the presigned url, we are in practive validating the expiration and the 
+        # tenant identity (we emailed this teached with the link to this specific object in our bucket)
+        # If this succeeds using a signed URL, this means that we provided a signed url for this bucket and this file name with the email 
+        # Address prefix. this is the user authorization for this (temporary) flow
 
         # TODO - handle errors - expiration, invalid link etc. 
 
@@ -62,6 +61,38 @@ def teacher_submit(event: dict, context: LambdaContext) -> dict:
     except Exception as err:
         return _build_error_response(err)
 
+
+def read_email_content(event: dict) -> Tuple[str, Dict, bytes]:
+    # TODO - implement this
+    # TODO - read email conteמt
+    #   - extract presigned URL, maybe retry once with a short wait - merge code from Alex
+    #   - extract attachment bytes
+
+    # Hard code presigned url until url read is implemented 
+    # You can generate a presigned URL for upload by calling create_presigned_post below
+
+    # For example:
+
+    #response = create_presigned_post(bucket_name="keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt", 
+    #                                 object_name="/TeacherSubmissions/email@gmail.com-submission.csv")
+
+    sender = "email@gmail.com" # TODO: Extract sender from event
+
+    # TODO: Buid this from the email context
+    presgined_url_dict = {
+        'url': 'https://keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt.s3.amazonaws.com/',
+        'fields': {
+            'AWSAccessKeyId': 'ASIAR37OWCTPEKLJW67W', 
+            'key': '/TeacherSubmissions/email@gmail.com-submission.csv', 
+            'policy': 'eyJleHBpcmF0aW9uIjogIjIwMjEtMDQtMDZUMTI6NTM6MDNaIiwgImNvbmRpdGlvbnMiOiBbeyJidWNrZXQiOiAia2VzaGVyY3N2dXBsb2FkLXNlcnZpY2VlbWFpbGtlc2hlcmNzdnVwbG9hZGVtYWlscy1qYmw4d2RsangwdHQifSwgeyJrZXkiOiAiL1RlYWNoZXJTdWJtaXNzaW9ucy9lbWFpbEBnbWFpbC5jb20tc3VibWlzc2lvbi5jc3YifSwgeyJ4LWFtei1zZWN1cml0eS10b2tlbiI6ICJGd29HWlhJdllYZHpFTlQvLy8vLy8vLy8vd0VhRFBNaVJLdFRUNzVqQVMxWDBDTG5BVHczb00wRStRaFVoaWFOZHRHZDFjRHJIV3FRUWFUZ0puYk1yY1dvVUlwS3gwZTlFL0p3MkJReVVIUE5sVHQ4RVVVa2c5UldzbXFJNVVwZGNSdVVST2FWbkZ2SXhiTm5ZUkpMLzh3dEViM3NsajFSb1hRdnlXbjNta0o2eU95SWNZWmp6WEhqeStvcHRUWkRwK3lwS3VEL2Npcmtya0RacWYrTmhpR20vQm5rd0FpRGo4VkVkdnFmN3RmeW9TbnRlU1orTkVDTlE5QVZadUsyNzg0dEZ4R1Z5bkxZdDVENmFMWlhSRzZKQnZlNEV5Y1NrVTB6bkR0TkR4KzdOaFVSQUZFMXFNdTRyS1BCYmpqQ2R5TFdDSkoxK0lOcml6UDRLU2wxckhZdFlNNGNrSXk3UjJYRzBTaTBxSzJEQmpJck1GS3NYYzdsbDNhMjR4NnRLQzlTb09RL1c1eXJ4clFoU05jczAwdWhmaFZBODk1STZHSTh3cjR5ZHc9PSJ9XX0=', 
+            'signature': 'zyu7yeGEH3ZvGPs+7JPgs2W3Kss=', 
+            'x-amz-security-token': 'FwoGZXIvYXdzENT//////////wEaDPMiRKtTT75jAS1X0CLnATw3oM0E+QhUhiaNdtGd1cDrHWqQQaTgJnbMrcWoUIpKx0e9E/Jw2BQyUHPNlTt8EUUkg9RWsmqI5UpdcRuUROaVnFvIxbNnYRJL/8wtEb3slj1RoXQvyWn3mkJ6yOyIcYZjzXHjy+optTZDp+ypKuD/cirkrkDZqf+NhiGm/BnkwAiDj8VEdvqf7tfyoSnteSZ+NECNQ9AVZuK2784tFxGVynLYt5D6aLZXRG6JBve4EycSkU0znDtNDx+7NhURAFE1qMu4rKPBbjjCdyLWCJJ1+INrizP4KSl1rHYtYM4ckIy7R2XG0Si0qK2DBjIrMFKsXc7ll3a24x6tKC9SoOQ/W5yrxrQhSNcs00uhfhVA895I6GI8wr4ydw=='
+        }
+    }
+
+    attachment_bytes = b'\xef\xbb\xbf\xd7\x9e\xd7\x96\xd7\x94\xd7\x94 \xd7\x92\xd7\x9f,\xd7\x9e\xd7\xa1\xd7\xa4\xd7\xa8 \xd7\x96\xd7\x94\xd7\x95\xd7\xaa \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\xa9\xd7\x9d \xd7\xa4\xd7\xa8\xd7\x98\xd7\x99 \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\xa9\xd7\x9d \xd7\x9e\xd7\xa9\xd7\xa4\xd7\x97\xd7\x94 \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\xaa\xd7\x90\xd7\xa8\xd7\x99\xd7\x9a \xd7\x9c\xd7\x99\xd7\x93\xd7\x94 \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\x9e\xd7\xa1\xd7\xa4\xd7\xa8 \xd7\x96\xd7\x94\xd7\x95\xd7\xaa,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\xa9\xd7\x9d \xd7\xa4\xd7\xa8\xd7\x98\xd7\x99,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\xa9\xd7\x9d \xd7\x9e\xd7\xa9\xd7\xa4\xd7\x97\xd7\x94,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\x90\xd7\x99\xd7\x9e\xd7\x99\xd7\x99\xd7\x9c,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\x9e\xd7\xa1\xd7\xa4\xd7\xa8 \xd7\x96\xd7\x94\xd7\x95\xd7\xaa,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\xa9\xd7\x9d \xd7\xa4\xd7\xa8\xd7\x98\xd7\x99,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\xa9\xd7\x9d \xd7\x9e\xd7\xa9\xd7\xa4\xd7\x97\xd7\x94,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\x90\xd7\x99\xd7\x9e\xd7\x99\xd7\x99\xd7\x9c,\xd7\x94\xd7\x90\xd7\x9d \xd7\x9c\xd7\x9e\xd7\x97\xd7\x95\xd7\xa7? (\xd7\x9c\xd7\x9e\xd7\x97\xd7\x99\xd7\xa7\xd7\xaa \xd7\xa8\xd7\xa9\xd7\x95\xd7\x9e\xd7\x94 \xd7\x96\xd7\x95 \xd7\xa1\xd7\x9e\xd7\x9f V)\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,'
+    return sender, presgined_url_dict, attachment_bytes
+    
 
 def _build_response(http_status: HTTPStatus, body: str) -> dict:
     return {'statusCode': http_status, 'headers': {'Content-Type': 'application/json'}, 'body': body}
@@ -130,3 +161,5 @@ def upload_s3_object_presigned(source_file: str, object_name: str, bucket_name: 
     if http_response.status_code > 300:
         logger.error(f"Error uploading object with presigned url {http_response.content=}")
         raise Exception(f"Error uploading {object_name=} to {bucket_name=}")
+
+upload_s3_object_presigned("moshe.txt", "the_object", "keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt")
