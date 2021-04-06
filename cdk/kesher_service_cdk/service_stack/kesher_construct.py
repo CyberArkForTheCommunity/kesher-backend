@@ -73,13 +73,14 @@ class KesherServiceEnvironment(core.Construct):
         }
         self._add_children_api()
         self._add_report_categories_api()
+        self._add_user_profile_api()
 
     def _add_report_categories_api(self):
         categories_resource: apigw.Resource = self.rest_api.root.add_resource("categories")
         self.__add_lambda_api(lambda_name='GetReportCategories',
                               handler_method='service.report_category_handler.get_report_categories_list',
                               resource=categories_resource, http_method="GET",
-                              member_name="get_kesher_api_lambda")
+                              member_name="get_report_categories_api_lambda")
 
     def _add_children_api(self):
         children_resource: apigw.Resource = self.api_resource.add_resource("children")
@@ -95,6 +96,15 @@ class KesherServiceEnvironment(core.Construct):
         self.__add_lambda_api(lambda_name='GetChildReports', handler_method='service.children_handler.get_child_reports',
                               resource=daily_reports_resource, http_method="GET",
                               member_name="get_child_reports_api_lambda")
+
+    def _add_user_profile_api(self):
+        categories_resource: apigw.Resource = self.api_resource.add_resource("user-profile")
+        self.__add_lambda_api(lambda_name='GetUserProfile',
+                              handler_method='service.user_profile_handler.get_user_profile',
+                              resource=categories_resource, http_method="GET",
+                              member_name="get_user_profile_api_lambda")
+
+
 
     def __add_lambda_api(self, lambda_name: str, handler_method: str, resource: Resource, http_method: str,
                          member_name: str,
