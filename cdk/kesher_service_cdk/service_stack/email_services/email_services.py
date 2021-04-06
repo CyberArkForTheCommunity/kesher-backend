@@ -8,6 +8,10 @@ import aws_cdk.aws_s3 as s3
 from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 from kesher_service_cdk.service_stack.constants import KESHER_DOMAIN_NAME
 
+
+EMAIL_BUCKET_ENV_VAR = 'EMAIL_BUCKET'
+
+
 class EmailServices(core.Construct):
 
 
@@ -17,6 +21,24 @@ class EmailServices(core.Construct):
     def __init__(self, scope: core.Construct, id: str, lambda_role: iam.Role) -> None:
         super().__init__(scope, id)
 
+        self.emails_bucket = s3.Bucket(
+            self,
+            f'{get_stack_name()}EmailsBucket',
+            removal_policy=core.RemovalPolicy.DESTROY,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+        )
+
+        self.emails_bucket.add_to_resource_policy(
+            iam.PolicyStatement(actions=['s3:PutObject'], 
+                                resources=[f'arn:aws:s3:::{self.emails_bucket.bucket_name}/*'],
+                                principals=[iam.ServicePrincipal('ses.amazonaws.com')],
+                                conditions={ "StringEquals": { "aws:Referer": core.Stack.of(self).account } }
+            )
+        )
+
+        bucket_name_output = core.CfnOutput(self, id="EmailBucket", value=self.emails_bucket.bucket_name)
+        bucket_name_output.override_logical_id("EmailBucket")
+
         admin_submit_lambda = aws_lambda.Function(
             self,
             'AdminDataSubmit',
@@ -24,6 +46,9 @@ class EmailServices(core.Construct):
             code=aws_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
             handler='functions.handler.admin_submit',
             role=lambda_role,
+            environment={
+                EMAIL_BUCKET_ENV_VAR: self.emails_bucket.bucket_name
+            },
         )
 
         teacher_submit_lambda = aws_lambda.Function(
@@ -33,28 +58,13 @@ class EmailServices(core.Construct):
             code=aws_lambda.Code.from_asset(self._LAMBDA_ASSET_DIR),
             handler='functions.handler.teacher_submit',
             role=lambda_role,
+            environment={
+                EMAIL_BUCKET_ENV_VAR: self.emails_bucket.bucket_name
+            },
         )
 
-        emails_bucket = s3.Bucket(
-            self,
-            f'{get_stack_name()}EmailsBucket',
-            removal_policy=core.RemovalPolicy.DESTROY,
-            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
-        )
-
-        emails_bucket.add_to_resource_policy(
-            iam.PolicyStatement(actions=['s3:PutObject'], 
-                                resources=[f'arn:aws:s3:::{emails_bucket.bucket_name}/*'],
-                                principals=[iam.ServicePrincipal('ses.amazonaws.com')],
-                                conditions={ "StringEquals": { "aws:Referer": core.Stack.of(self).account } }
-            )
-        )
-
-        bucket_name_output = core.CfnOutput(self, id="EmailBucket", value=emails_bucket.bucket_name)
-        bucket_name_output.override_logical_id("EmailBucket")
-
-        emails_bucket.grant_read_write(admin_submit_lambda)
-        emails_bucket.grant_read_write(teacher_submit_lambda)
+        self.emails_bucket.grant_read_write(admin_submit_lambda)
+        self.emails_bucket.grant_read_write(teacher_submit_lambda)
 
 
         ruleset_name = ses.ReceiptRuleSet(scope=self, id="DataSubmissionReceiptRuleSet",
@@ -64,7 +74,7 @@ class EmailServices(core.Construct):
                     receipt_rule_name=f'{get_stack_name()}AdminSubmitRule',
                     recipients=[f'adminsubmit@{KESHER_DOMAIN_NAME}'],
                     actions=[
-                        ses_actions.S3(bucket=emails_bucket, object_key_prefix="AdminIncomingEmail"), 
+                        ses_actions.S3(bucket=self.emails_bucket, object_key_prefix="AdminIncomingEmail"), 
                         ses_actions.Lambda(function=admin_submit_lambda)
                     ],
                 ),
@@ -72,7 +82,7 @@ class EmailServices(core.Construct):
                     receipt_rule_name=f'{get_stack_name()}TeacherSubmitRule',
                     recipients=[f'teachersubmit@{KESHER_DOMAIN_NAME}'],
                     actions=[
-                        ses_actions.S3(bucket=emails_bucket, object_key_prefix="TeacherIncomingEmail"), 
+                        ses_actions.S3(bucket=self.emails_bucket, object_key_prefix="TeacherIncomingEmail"), 
                         ses_actions.Lambda(function=teacher_submit_lambda),
                     ]
                 )
