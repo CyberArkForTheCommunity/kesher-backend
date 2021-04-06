@@ -30,25 +30,32 @@ def get_report_categories_list(event: dict, context: LambdaContext) -> dict:
     print(f"event: {event}, context: {context}")
 
     try:
+
         # kesher_dto: KesherDto = KesherDto.parse_raw(event["body"])
         # now: Decimal = Decimal(datetime.now().timestamp())
         # kesher: Kesher = Kesher(name=kesher_dto.name, created_date=now, updated_date=now)
 
         logger.info(" in get_report_categories_list")
 
-       # sub_categories = []
-       # report_categories = []
-       # sub_categories.append(SubCategory(subcategory_id=34, subcategory_name="mock_sub_category"))
-       # report_categories.append(Category(category_id=123, category_name="mock_cat_name", sub_categories=sub_categories))
+        # sub_categories = []
+        # report_categories = []
+        # sub_categories.append(SubCategory(subcategory_id=34, subcategory_name="mock_sub_category"))
+        # report_categories.append(Category(category_id=123, category_name="mock_cat_name", sub_categories=sub_categories))
 
         mock_json = {
             "categories": {
                 "category_id": 12,
                 "category_name": "mock_cat_name",
-                "sub_categories": {
+                "sub_categories": [
+                    {
                     "subcategory_id": 23,
-                    "subcategory_name": "mock_sub_cat"
-                }
+                    "subcategory_name": "mock_sub_cat1"
+                    },
+                    {
+                    "subcategory_id": 235,
+                    "subcategory_name": "mock_sub_cat2"
+                    },
+                ]
             }
         }
 
