@@ -119,7 +119,7 @@ DROP PROCEDURE IF EXISTS get_categories_and_subcategories;
 
 Create PROCEDURE get_categories_and_subcategories()
 BEGIN
-SELECT cat.record_id, cat.category_name, sub.subcategory_name
+SELECT cat.record_id as category_id, sub.record_id as sub_category_id, cat.category_name, sub.subcategory_name
 FROM report_categories AS cat
 JOIN report_subcategories AS sub
 ON cat.record_id = sub.category_id;
