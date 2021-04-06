@@ -61,11 +61,13 @@ class KesherServiceEnvironment(core.Construct):
         self.table.grant_read_write_data(self.service_role)
 
         self.rest_api: apigw.LambdaRestApi = apigw.RestApi(self, "kesher-rest-api", rest_api_name="kesher Rest API",
-                                                           description="This service handles kesher")
+                                                           description="This service handles kesher's APIs..")
         endpoint_output = core.CfnOutput(self, id="KesherApiGw", value=self.rest_api.url)
         endpoint_output.override_logical_id("KesherApiGw")
+
         self.api_authorizer: apigw.CfnAuthorizer = self.__create_api_authorizer(user_pool_arn=user_pool_arn,
                                                                                 api=self.rest_api)
+
         self.api_resource: apigw.Resource = self.rest_api.root.add_resource("api")
 
         self._environment = {
@@ -76,11 +78,11 @@ class KesherServiceEnvironment(core.Construct):
         self._add_user_profile_api()
 
     def _add_report_categories_api(self):
-        categories_resource: apigw.Resource = self.rest_api.root.add_resource("categories")
+        categories_resource: apigw.Resource = self.api_resource.add_resource("categories")
         self.__add_lambda_api(lambda_name='GetReportCategories',
                               handler_method='service.report_category_handler.get_report_categories_list',
                               resource=categories_resource, http_method="GET",
-                              member_name="get_report_categories_api_lambda")
+                              member_name="get_categories_api_lambda")
 
     def _add_children_api(self):
         children_resource: apigw.Resource = self.api_resource.add_resource("children")
@@ -90,12 +92,22 @@ class KesherServiceEnvironment(core.Construct):
 
         child_resource: apigw.Resource = children_resource.add_resource("{child_id}")
         daily_reports_resource = child_resource.add_resource('daily-reports')
-        self.__add_lambda_api(lambda_name='AddChildReport', handler_method='service.children_handler.add_child_report',
+        attendance_resource = child_resource.add_resource('attendance')
+
+        self.__add_lambda_api(lambda_name='AddChildReport',
+                              handler_method='service.children_handler.add_child_report',
                               resource=daily_reports_resource, http_method="POST",
                               member_name="add_child_report_api_lambda")
-        self.__add_lambda_api(lambda_name='GetChildReports', handler_method='service.children_handler.get_child_reports',
+
+        self.__add_lambda_api(lambda_name='GetChildReports',
+                              handler_method='service.children_handler.get_child_reports',
                               resource=daily_reports_resource, http_method="GET",
                               member_name="get_child_reports_api_lambda")
+
+        self.__add_lambda_api(lambda_name='UpdateChildAttendance',
+                              handler_method='service.children_handler.update_child_attendance',
+                              resource=attendance_resource, http_method="PUT",
+                              member_name="update_child_attendance")
 
     def _add_user_profile_api(self):
         categories_resource: apigw.Resource = self.api_resource.add_resource("user-profile")
@@ -103,8 +115,6 @@ class KesherServiceEnvironment(core.Construct):
                               handler_method='service.user_profile_handler.get_user_profile',
                               resource=categories_resource, http_method="GET",
                               member_name="get_user_profile_api_lambda")
-
-
 
     def __add_lambda_api(self, lambda_name: str, handler_method: str, resource: Resource, http_method: str,
                          member_name: str,
@@ -147,7 +157,8 @@ class KesherServiceEnvironment(core.Construct):
         method = resource.add_method(
             http_method=http_method,
             integration=integration,
-            authorization_type=apigw.AuthorizationType.COGNITO,
-        )
+            authorization_type=apigw.AuthorizationType.COGNITO)
+
         method_resource: apigw.Resource = method.node.find_child("Resource")
+
         method_resource.add_property_override("AuthorizerId", {"Ref": authorizer.logical_id})

@@ -55,7 +55,7 @@ def get_report_categories_list(event: dict, context: LambdaContext) -> dict:
         mock_json_str = json.dumps(mock_json)
         print(f"returning {mock_json_str}")
 
-        return build_response(http_status=HTTPStatus.CREATED, body=mock_json_str)
+        return build_response(http_status=HTTPStatus.OK, body=mock_json_str)
     except (ValidationError, TypeError) as err:
         return build_error_response(err, HTTPStatus.BAD_REQUEST)
     except Exception as err:
