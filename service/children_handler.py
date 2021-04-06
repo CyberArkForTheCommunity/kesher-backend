@@ -1,17 +1,15 @@
-import string
 from datetime import datetime
 from decimal import Decimal
 import json
 from http import HTTPStatus
-from service.models.daily_report import DailyReportAdd, DailyReportGet
-
+from service.models.daily_report import DailyReport, DailyReportAddDto, DailyReportGetDto
 from service.response_utils import build_error_response, build_response
-
 from aws_lambda_powertools.logging import logger
 from aws_lambda_context import LambdaContext
 from pydantic import ValidationError
 from aws_lambda_powertools import Logger
 from service.models.child import Child, Attendance
+from service.access_layer.utils.db_query_utils import execute_query
 
 logger = Logger()
 
@@ -40,7 +38,7 @@ def add_child_report(event: dict, context: LambdaContext) -> dict:
 
     try:
         child_id: str = event["pathParameters"]["child_id"]
-        daily_report = DailyReportAdd.parse_raw(event["body"])
+        daily_report = DailyReportAddDto.parse_raw(event["body"])
         # TODO get from DB
         return build_response(http_status=HTTPStatus.CREATED, body=daily_report.json())
     except (ValidationError, TypeError) as err:
@@ -57,16 +55,19 @@ def get_child_reports(event: dict, context: LambdaContext) -> dict:
 
     try:
         child_id: str = event["pathParameters"]["child_id"]
-        now: Decimal = Decimal(datetime.now().timestamp())
-        daily_reports = [
-            DailyReportGet(child_id=child_id, value="Itamar ate lunch", category_id=1234, subcategory_id=4635,
-                           sender_id=23432, timestamp=now).dict(),
-            DailyReportGet(child_id=child_id, value="Itamar ate dinner", category_id=1234, subcategory_id=235235,
-                           sender_id=23432, timestamp=now).dict()
-        ]
-        if daily_reports is None:
+        daily_reports_dtos = []
+        
+        query_results = execute_query(f"CALL get_daily_reports_per_child_id ('{child_id}');")
+        for report in query_results:
+            daily_report = DailyReport(*report)
+            daily_report_dto = DailyReportGetDto(child_id=child_id, value = daily_report.report_value, 
+                    category_id=daily_report.category_id, subcategory_id = daily_report.subcategory_id, 
+                    sender_id=daily_report.sender_id, timestamp = daily_report.report_date.strftime("%m/%d/%Y, %H:%M:%S"))
+            daily_reports_dtos.append(daily_report_dto.dict())
+
+        if daily_reports_dtos is None:
             return build_response(HTTPStatus.NOT_FOUND, body="")
-        body = json.dumps({'daily_reports': daily_reports})
+        body = json.dumps({'daily_reports': daily_reports_dtos})
         return build_response(HTTPStatus.OK, body)
     except (ValidationError, TypeError) as err:
         return build_error_response(err, HTTPStatus.BAD_REQUEST)
