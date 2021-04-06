@@ -47,14 +47,12 @@ CREATE TABLE IF NOT EXISTS kindergarten_staff_mapping (
 -- ---------------------------------------------------------
 -- ------------ CREATE kinder_gartens table ----------------
 -- --------------------------------------------------------- 
--- | record_id                  |  kindergarten_id                                               | admin             |
--- | an auto generated index    | id number of the kindergarten as signed in the welfare office  | google account    |
--- |                            | if == 0                                                        | admin is not ""   |
--- |                            | else                                                           | ""                |
+-- | record_id                  |  kindergarten_id                                               | kindergarten_name                 |
+-- | an auto generated index    | id number of the kindergarten as signed in the welfare office  | the name of the kindergarten      |
 CREATE TABLE IF NOT EXISTS kinder_gartens (
     record_id INT AUTO_INCREMENT PRIMARY KEY,
-    kindergarten_id INT,
-    admin VARCHAR(255) NOT NULL,
+    kindergarten_id INT NOT NULL,
+    kindergarten_name VARCHAR(255) NOT NULL,
     UNIQUE (kindergarten_id));
     
     
@@ -96,8 +94,7 @@ record_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 child_id VARCHAR(255) NOT NULL,
 FOREIGN KEY (child_id) REFERENCES children(child_id),
 arrival_date DATE NOT NULL,
-arrival_time TIME NOT NULL,
-CONSTRAINT child_id_constraint UNIQUE (child_id));
+arrival_time TIME NOT NULL);
 
 
 -- ---------------------------------------------------------
@@ -118,11 +115,11 @@ INSERT INTO report_categories (category_name) VALUES ('meals'),
 -- ---------------------------------------------------------
 -- ----------- CREATE report_subcategories table -----------
 -- --------------------------------------------------------- 
--- | record_id                  | category_id              | subcategory_name                                                     |
--- | an auto generated index    | 1 (meals)                | breakfast/fruit/lunch/Minha                                          |
--- |                            | 2 (activities)           | table games/jamboree/play around/ arts and crafts/ daily skills      |
--- |                            | 3 (required equipment)   | sheets/clothes/diapers/ fresh wipess/ others                         |
--- |                            | 4 (medical care)         | physiotherapy/speech therapy/occupational therapy/ emotional therapy |                    |
+-- | record_id                  | category_id                                               | subcategory_name                                                     |
+-- | an auto generated index    | the record_id in report_categories (meals)                | breakfast/fruit/lunch/Minha                                          |
+-- |                            | 2 (activities)                                            | table games/jamboree/play around/ arts and crafts/ daily skills      |
+-- |                            | 3 (required equipment)                                    | sheets/clothes/diapers/ fresh wipess/ others                         |
+-- |                            | 4 (medical care)                                          | physiotherapy/speech therapy/occupational therapy/ emotional therapy |                    |
 
 CREATE TABLE IF NOT EXISTS report_subcategories (
 category_id INT NOT NULL,
