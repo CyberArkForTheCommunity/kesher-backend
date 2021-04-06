@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from tests.helpers.environment_handler import load_env_vars
 from tests.helpers.random_utils import random_string
 from tests.helpers.cognito_auth_util import add_auth_header
+from service.access_layer.get_connection import get_connection_to_rds
 
 # from cdk.kesher_service_cdk.service_stack.kesher_construct import get_stack_name
 # from kesher_service_cdk.service_stack.constants import BASE_NAME
@@ -87,3 +88,10 @@ def test_update_kesher(endpoint_url, auth_headers):
     assert now - day_seconds < resource['created_date'] < now + day_seconds
     assert now - day_seconds < resource['updated_date'] < now + day_seconds
     assert resource['created_date'] < resource['updated_date']
+
+
+def test_connection_to_rds_and_run_simple_query():
+    connection = get_connection_to_rds()
+    cur = connection.cursor()
+    cur.execute("""SELECT now()""")
+    query_results = cur.fetchall()
