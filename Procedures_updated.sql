@@ -126,3 +126,20 @@ ON cat.record_id = sub.category_id;
 END;
 
 // ;
+							    
+DROP PROCEDURE IF EXISTS get_all_children_of_kindergarten;
+
+DELIMITER // ;
+
+CREATE procedure get_all_children_of_kindergarten(IN kindergarten_id VARCHAR(255))
+BEGIN
+SELECT * FROM
+(SELECT *
+ FROM children c
+ WHERE c.kindergarten_id = kindergarten_id AND c.is_deleted = 0) as children_2
+ LEFT JOIN attendance as a
+ ON a.child_id = children_2.child_id AND a.arrival_date = curdate(); 
+END;
+
+
+// ;
