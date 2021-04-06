@@ -1,3 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS Kesher;
+USE Kesher;
+
 
 -- ---------------------------------------------------------
 -- ---------------------------DELETE TABLES ----------------
@@ -96,8 +99,7 @@ record_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 child_id VARCHAR(255) NOT NULL,
 FOREIGN KEY (child_id) REFERENCES children(child_id),
 arrival_date DATE NOT NULL,
-arrival_time TIME NOT NULL,
-CONSTRAINT child_id_constraint UNIQUE (child_id));
+arrival_time TIME NOT NULL);
 
 
 -- ---------------------------------------------------------
