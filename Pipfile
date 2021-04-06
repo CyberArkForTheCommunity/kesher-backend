@@ -33,6 +33,7 @@ aws-cdk-aws-ses = "*"
 aws-cdk-aws-ses-actions = "*"
 pandas = "*"
 aws-cdk-aws-route53 = "*"
+requests = "*"
 
 [requires]
 python_version = "3.8"
