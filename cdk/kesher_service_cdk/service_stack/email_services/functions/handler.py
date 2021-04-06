@@ -13,6 +13,12 @@ from pydantic import ValidationError
 
 from kesher_service_cdk.service_stack.email_services.email_services import EMAIL_BUCKET_ENV_VAR
 
+from email.parser import BytesParser
+from email import policy
+from email.message import Message, EmailMessage
+from pandas import read_csv, DataFrame, Series
+from io import BytesIO
+
 
 logger = Logger()
 
@@ -34,7 +40,7 @@ def admin_submit(event: dict, context: LambdaContext) -> dict:
 def teacher_submit(event: dict, context: LambdaContext) -> dict:
     try:
         bucket_name = get_env_var(EMAIL_BUCKET_ENV_VAR)
-        sender, presigned_url, attachment_bytes = read_email_content(event)
+        sender, presigned_url, attachment_bytes = read_email_content(event=event, bucket_name=bucket_name)
         
         local_file_name = f'{sender}.kindergarten_ids.csv'
         with open(local_file_name, "wb") as file:
@@ -62,7 +68,7 @@ def teacher_submit(event: dict, context: LambdaContext) -> dict:
         return _build_error_response(err)
 
 
-def read_email_content(event: dict) -> Tuple[str, Dict, bytes]:
+def read_email_content(event: dict, bucket_name: str) -> Tuple[str, Dict, bytes]:
     # TODO - implement this
     # TODO - read email conteמt
     #   - extract presigned URL, maybe retry once with a short wait - merge code from Alex
@@ -76,23 +82,41 @@ def read_email_content(event: dict) -> Tuple[str, Dict, bytes]:
     #response = create_presigned_post(bucket_name="keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt", 
     #                                 object_name="/TeacherSubmissions/email@gmail.com-submission.csv")
 
-    sender = "email@gmail.com" # TODO: Extract sender from event
-
-    # TODO: Buid this from the email context
+    # sender = "email@gmail.com" # TODO: Extract sender from event
+    #
+    # # TODO: Buid this from the email context
     presgined_url_dict = {
         'url': 'https://keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt.s3.amazonaws.com/',
         'fields': {
-            'AWSAccessKeyId': '<Populate>', 
-            'key': '/TeacherSubmissions/email@gmail.com-submission.csv', 
-            'policy': '<populate>', 
-            'signature': '<populate>', 
+            'AWSAccessKeyId': '<Populate>',
+            'key': '/TeacherSubmissions/email@gmail.com-submission.csv',
+            'policy': '<populate>',
+            'signature': '<populate>',
             'x-amz-security-token': '<populate>'
         }
     }
+    #
+    # attachment_bytes = b'\xef\xbb\xbf\xd7\x9e\xd7\x96\xd7\x94\xd7\x94 \xd7\x92\xd7\x9f,\xd7\x9e\xd7\xa1\xd7\xa4\xd7\xa8 \xd7\x96\xd7\x94\xd7\x95\xd7\xaa \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\xa9\xd7\x9d \xd7\xa4\xd7\xa8\xd7\x98\xd7\x99 \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\xa9\xd7\x9d \xd7\x9e\xd7\xa9\xd7\xa4\xd7\x97\xd7\x94 \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\xaa\xd7\x90\xd7\xa8\xd7\x99\xd7\x9a \xd7\x9c\xd7\x99\xd7\x93\xd7\x94 \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\x9e\xd7\xa1\xd7\xa4\xd7\xa8 \xd7\x96\xd7\x94\xd7\x95\xd7\xaa,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\xa9\xd7\x9d \xd7\xa4\xd7\xa8\xd7\x98\xd7\x99,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\xa9\xd7\x9d \xd7\x9e\xd7\xa9\xd7\xa4\xd7\x97\xd7\x94,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\x90\xd7\x99\xd7\x9e\xd7\x99\xd7\x99\xd7\x9c,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\x9e\xd7\xa1\xd7\xa4\xd7\xa8 \xd7\x96\xd7\x94\xd7\x95\xd7\xaa,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\xa9\xd7\x9d \xd7\xa4\xd7\xa8\xd7\x98\xd7\x99,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\xa9\xd7\x9d \xd7\x9e\xd7\xa9\xd7\xa4\xd7\x97\xd7\x94,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\x90\xd7\x99\xd7\x9e\xd7\x99\xd7\x99\xd7\x9c,\xd7\x94\xd7\x90\xd7\x9d \xd7\x9c\xd7\x9e\xd7\x97\xd7\x95\xd7\xa7? (\xd7\x9c\xd7\x9e\xd7\x97\xd7\x99\xd7\xa7\xd7\xaa \xd7\xa8\xd7\xa9\xd7\x95\xd7\x9e\xd7\x94 \xd7\x96\xd7\x95 \xd7\xa1\xd7\x9e\xd7\x9f V)\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,'
+    # return sender, presgined_url_dict, attachment_bytes
+    ses_mail = event['Records'][0]['ses']['mail']
+    message_id = ses_mail['messageId']
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(bucket_name)
+    raw_email = bucket.Object('TeacherIncomingEmail/' + message_id).get()['Body'].read()
+    msg: EmailMessage = BytesParser(policy=policy.SMTP).parsebytes(raw_email)
+    sender = None
+    attachment_bytes = None
+    presgined_url_dict = None
+    for header in msg._headers:
+        if header[0] == 'Return-Path':
+            sender = header[1][1:-1]
+    for attachment in msg.iter_attachments():
+        filename: str = attachment.get_filename()
+        if filename.endswith('.csv'):
+            attachment_bytes = attachment.get_payload(decode=True)
 
-    attachment_bytes = b'\xef\xbb\xbf\xd7\x9e\xd7\x96\xd7\x94\xd7\x94 \xd7\x92\xd7\x9f,\xd7\x9e\xd7\xa1\xd7\xa4\xd7\xa8 \xd7\x96\xd7\x94\xd7\x95\xd7\xaa \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\xa9\xd7\x9d \xd7\xa4\xd7\xa8\xd7\x98\xd7\x99 \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\xa9\xd7\x9d \xd7\x9e\xd7\xa9\xd7\xa4\xd7\x97\xd7\x94 \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\xaa\xd7\x90\xd7\xa8\xd7\x99\xd7\x9a \xd7\x9c\xd7\x99\xd7\x93\xd7\x94 \xd7\x99\xd7\x9c\xd7\x93/\xd7\x94,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\x9e\xd7\xa1\xd7\xa4\xd7\xa8 \xd7\x96\xd7\x94\xd7\x95\xd7\xaa,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\xa9\xd7\x9d \xd7\xa4\xd7\xa8\xd7\x98\xd7\x99,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\xa9\xd7\x9d \xd7\x9e\xd7\xa9\xd7\xa4\xd7\x97\xd7\x94,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 1 \xd7\x90\xd7\x99\xd7\x9e\xd7\x99\xd7\x99\xd7\x9c,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\x9e\xd7\xa1\xd7\xa4\xd7\xa8 \xd7\x96\xd7\x94\xd7\x95\xd7\xaa,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\xa9\xd7\x9d \xd7\xa4\xd7\xa8\xd7\x98\xd7\x99,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\xa9\xd7\x9d \xd7\x9e\xd7\xa9\xd7\xa4\xd7\x97\xd7\x94,\xd7\x94\xd7\x95\xd7\xa8\xd7\x94 2 \xd7\x90\xd7\x99\xd7\x9e\xd7\x99\xd7\x99\xd7\x9c,\xd7\x94\xd7\x90\xd7\x9d \xd7\x9c\xd7\x9e\xd7\x97\xd7\x95\xd7\xa7? (\xd7\x9c\xd7\x9e\xd7\x97\xd7\x99\xd7\xa7\xd7\xaa \xd7\xa8\xd7\xa9\xd7\x95\xd7\x9e\xd7\x94 \xd7\x96\xd7\x95 \xd7\xa1\xd7\x9e\xd7\x9f V)\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,\r\n,,,,,,,,,,,,,'
-    return sender, presgined_url_dict, attachment_bytes
-    
+    return sender, presigned_url, attachment_bytes
+
 
 def _build_response(http_status: HTTPStatus, body: str) -> dict:
     return {'statusCode': http_status, 'headers': {'Content-Type': 'application/json'}, 'body': body}
@@ -162,4 +186,4 @@ def upload_s3_object_presigned(source_file: str, object_name: str, bucket_name: 
         logger.error(f"Error uploading object with presigned url {http_response.content=}")
         raise Exception(f"Error uploading {object_name=} to {bucket_name=}")
 
-upload_s3_object_presigned("moshe.txt", "the_object", "keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt")
+    upload_s3_object_presigned("moshe.txt", "the_object", "keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt")
