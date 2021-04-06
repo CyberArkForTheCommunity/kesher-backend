@@ -1,7 +1,9 @@
 from service.access_layer.get_connection import get_connection_to_rds
 
-def test_connection_to_rds_and_run_simple_query():
+
+def execute_query(query: str):
     connection = get_connection_to_rds()
     cur = connection.cursor()
-    cur.execute("""SELECT now()""")
+    cur.execute(query)
     query_results = cur.fetchall()
+    return query_results

@@ -35,6 +35,5 @@ def do_build(consume_dependencies=True, include_dev=False):
                      requirements_txt=requirements_txt).build()
 
 
-
 if __name__ == "__main__":
     build()

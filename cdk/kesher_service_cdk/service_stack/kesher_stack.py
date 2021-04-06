@@ -7,7 +7,6 @@ from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 
 from .auth_construct import KesherAuth
 
-
 class KesherStack(core.Stack):
 
     # pylint: disable=redefined-builtin

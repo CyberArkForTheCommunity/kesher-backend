@@ -39,7 +39,7 @@ setup(
         "aws-cdk.aws-ses>=1.96.0",
         "aws-cdk.aws-lambda>=1.96.0",
         "aws-cdk.aws-ses-actions>=1.96.0"
-
+        "aws-cdk.aws-rds>=1.96.0"
     ],
     python_requires=">=3.8",
 )
