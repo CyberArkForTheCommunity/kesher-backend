@@ -82,11 +82,11 @@ def read_email_content(event: dict) -> Tuple[str, Dict, bytes]:
     presgined_url_dict = {
         'url': 'https://keshercsvupload-serviceemailkeshercsvuploademails-jbl8wdljx0tt.s3.amazonaws.com/',
         'fields': {
-            'AWSAccessKeyId': 'ASIAR37OWCTPEKLJW67W', 
+            'AWSAccessKeyId': '<Populate>', 
             'key': '/TeacherSubmissions/email@gmail.com-submission.csv', 
-            'policy': 'eyJleHBpcmF0aW9uIjogIjIwMjEtMDQtMDZUMTI6NTM6MDNaIiwgImNvbmRpdGlvbnMiOiBbeyJidWNrZXQiOiAia2VzaGVyY3N2dXBsb2FkLXNlcnZpY2VlbWFpbGtlc2hlcmNzdnVwbG9hZGVtYWlscy1qYmw4d2RsangwdHQifSwgeyJrZXkiOiAiL1RlYWNoZXJTdWJtaXNzaW9ucy9lbWFpbEBnbWFpbC5jb20tc3VibWlzc2lvbi5jc3YifSwgeyJ4LWFtei1zZWN1cml0eS10b2tlbiI6ICJGd29HWlhJdllYZHpFTlQvLy8vLy8vLy8vd0VhRFBNaVJLdFRUNzVqQVMxWDBDTG5BVHczb00wRStRaFVoaWFOZHRHZDFjRHJIV3FRUWFUZ0puYk1yY1dvVUlwS3gwZTlFL0p3MkJReVVIUE5sVHQ4RVVVa2c5UldzbXFJNVVwZGNSdVVST2FWbkZ2SXhiTm5ZUkpMLzh3dEViM3NsajFSb1hRdnlXbjNta0o2eU95SWNZWmp6WEhqeStvcHRUWkRwK3lwS3VEL2Npcmtya0RacWYrTmhpR20vQm5rd0FpRGo4VkVkdnFmN3RmeW9TbnRlU1orTkVDTlE5QVZadUsyNzg0dEZ4R1Z5bkxZdDVENmFMWlhSRzZKQnZlNEV5Y1NrVTB6bkR0TkR4KzdOaFVSQUZFMXFNdTRyS1BCYmpqQ2R5TFdDSkoxK0lOcml6UDRLU2wxckhZdFlNNGNrSXk3UjJYRzBTaTBxSzJEQmpJck1GS3NYYzdsbDNhMjR4NnRLQzlTb09RL1c1eXJ4clFoU05jczAwdWhmaFZBODk1STZHSTh3cjR5ZHc9PSJ9XX0=', 
-            'signature': 'zyu7yeGEH3ZvGPs+7JPgs2W3Kss=', 
-            'x-amz-security-token': 'FwoGZXIvYXdzENT//////////wEaDPMiRKtTT75jAS1X0CLnATw3oM0E+QhUhiaNdtGd1cDrHWqQQaTgJnbMrcWoUIpKx0e9E/Jw2BQyUHPNlTt8EUUkg9RWsmqI5UpdcRuUROaVnFvIxbNnYRJL/8wtEb3slj1RoXQvyWn3mkJ6yOyIcYZjzXHjy+optTZDp+ypKuD/cirkrkDZqf+NhiGm/BnkwAiDj8VEdvqf7tfyoSnteSZ+NECNQ9AVZuK2784tFxGVynLYt5D6aLZXRG6JBve4EycSkU0znDtNDx+7NhURAFE1qMu4rKPBbjjCdyLWCJJ1+INrizP4KSl1rHYtYM4ckIy7R2XG0Si0qK2DBjIrMFKsXc7ll3a24x6tKC9SoOQ/W5yrxrQhSNcs00uhfhVA895I6GI8wr4ydw=='
+            'policy': '<populate>', 
+            'signature': '<populate>', 
+            'x-amz-security-token': '<populate>'
         }
     }
 
