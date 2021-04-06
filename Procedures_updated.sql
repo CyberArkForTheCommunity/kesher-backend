@@ -6,11 +6,11 @@ DELIMITER // ;
 DROP PROCEDURE IF EXISTS insert_user;
 
 Create PROCEDURE  insert_user( IN first_name VARCHAR(255), 
-							      IN last_name VARCHAR(255),
-							      IN email_address VARCHAR(255),
-                                  IN id_number  VARCHAR(255),
-								  IN user_type ENUM('admin','kinder-gardener','parent', 'admin_and_kindergardener'), 
-                                  IN is_deleted BOOL)
+			       IN last_name VARCHAR(255),
+			       IN email_address VARCHAR(255),
+                               IN id_number  VARCHAR(255),
+			       IN user_type ENUM('admin','kinder-gardener','parent', 'admin_and_kindergardener'), 
+                               IN is_deleted BOOL)
 BEGIN
 	insert into users(first_name, last_name, email_address, id_number, user_type, is_deleted) values (first_name, last_name, email_address, id_number, user_type, is_deleted);
 END;
