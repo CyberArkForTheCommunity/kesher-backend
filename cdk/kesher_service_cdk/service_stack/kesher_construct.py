@@ -104,14 +104,17 @@ class KesherServiceEnvironment(core.Construct):
                               resource=daily_reports_resource, http_method="GET",
                               member_name="get_child_reports_api_lambda")
 
-    def _add_user_profile_api(self):
-        categories_resource: apigw.Resource = self.api_resource.add_resource("user-profile")
         self.__add_lambda_api(lambda_name='UpdateChildAttendance',
                               handler_method='service.children_handler.update_child_attendance',
                               resource=attendance_resource, http_method="PUT",
                               member_name="update_child_attendance")
 
-
+    def _add_user_profile_api(self):
+        categories_resource: apigw.Resource = self.api_resource.add_resource("user-profile")
+        self.__add_lambda_api(lambda_name='GetUserProfile',
+                              handler_method='service.user_profile_handler.get_user_profile',
+                              resource=categories_resource, http_method="GET",
+                              member_name="get_user_profile_api_lambda")
 
     def __add_lambda_api(self, lambda_name: str, handler_method: str, resource: Resource, http_method: str,
                          member_name: str,
