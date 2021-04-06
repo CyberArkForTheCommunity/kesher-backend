@@ -126,10 +126,10 @@ ON cat.record_id = sub.category_id;
 END;
 
 // ;
-							    
-DROP PROCEDURE IF EXISTS get_all_children_of_kindergarten;
 
 DELIMITER // ;
+
+DROP PROCEDURE IF EXISTS get_all_children_of_kindergarten;
 
 CREATE procedure get_all_children_of_kindergarten(IN kindergarten_id VARCHAR(255))
 BEGIN
