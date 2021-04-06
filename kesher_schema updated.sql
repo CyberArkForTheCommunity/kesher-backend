@@ -1,3 +1,6 @@
+CREATE DATABASE IF NOT EXISTS Kesher;
+USE Kesher;
+
 
 -- ---------------------------------------------------------
 -- ---------------------------DELETE TABLES ----------------
@@ -16,11 +19,11 @@ DROP TABLE IF EXISTS kinder_gartens;
 -- ---------------------------------------------------------
 -- --------------------- CREATE USERS table ----------------
 -- ---------------------------------------------------------
--- |id                      | user_type                    |  first_name      | last_name      | email_address      | id_number | is_deleted                 |
--- |an auto generated index | admin/kinder-gardener/parent |  user first name | user last name | user email address | user id   | true if need to be deleted |
+-- |id                      | user_type                                             |  first_name      | last_name      | email_address      | id_number | is_deleted                 |
+-- |an auto generated index | admin/kinder-gardener/parent/admin_and_kindergardener |  user first name | user last name | user email address | user id   | true if need to be deleted |
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_type ENUM('admin','kinder-gardener','parent') NOT NULL,
+    user_type ENUM('admin','kinder-gardener','parent', 'admin_and_kindergardener') NOT NULL,
     first_name VARCHAR(255) NOT NULL,
     last_name  VARCHAR(255) NOT NULL,
     email_address  VARCHAR(255) NOT NULL,
@@ -59,14 +62,15 @@ CREATE TABLE IF NOT EXISTS kinder_gartens (
 -- ---------------------------------------------------------
 -- ---------------- CREATE children table ------------------
 -- ---------------------------------------------------------
--- | record_id                  |  kindergarten_id                                | child_id       | child_first_name| child_last_name | is_deleted                |
--- | an auto generated index    | the kindergarten_id from kinder_gartens table   | id of the child| first name      | last name       |true if need to be deleted |
+-- | record_id                  |  kindergarten_id                                | child_id       | child_first_name| child_last_name | child_birth_date| is_deleted                |
+-- | an auto generated index    | the kindergarten_id from kinder_gartens table   | id of the child| first name      | last name       | date of birth   |true if need to be deleted |
 CREATE TABLE IF NOT EXISTS children (
     record_id INT AUTO_INCREMENT PRIMARY KEY,
     kindergarten_id INT NOT NULL,
     child_id VARCHAR(255) NOT NULL,
     child_first_name  VARCHAR(255) NOT NULL,
     child_last_name  VARCHAR(255) NOT NULL,
+    child_birth_date DATE NOT NULL,
     is_deleted BOOL,
     UNIQUE(child_id),
     FOREIGN KEY (kindergarten_id) REFERENCES kinder_gartens(kindergarten_id));
