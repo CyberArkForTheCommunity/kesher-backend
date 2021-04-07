@@ -5,12 +5,14 @@ import os
 import random
 import string
 from kesher_service_cdk.service_stack import constants
+import boto3
 from boto3 import session
 from pathlib import Path
 from dotenv import load_dotenv
-from kesher_service_cdk.service_stack.kesher_construct import get_stack_name
+from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 from build import do_build
 from deploy import users
+
 
 PROJECT_DIR_KEY = 'PROJECT_DIR'
 
@@ -28,6 +30,7 @@ def init_local_dotenv():
 
 
 def main():
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--deploy-env', default='dev')
     parser.add_argument("--region", default="eu-west-1")
@@ -73,6 +76,14 @@ def main():
     email = os.environ.get('USER_EMAIL')
     users.create_user(getpass.getuser(), password, user_pool_id, email=email)
 
+    ruleset_name = get_stack_output("RuleSetName")
+    if ruleset_name is None:
+        print("Error getting Ruleset name, please set the receipt rule set to active in the SES console")
+        exit(1)
+
+    ses = boto3.client('ses')
+    ses.set_active_receipt_rule_set(RuleSetName=ruleset_name)
+
 def env_init_local_dotenv(project_path: str, env_vars: dict, override_env_vars: bool = False):
     """
     Init a new .env file if it does not exist and load it into os.environ
@@ -104,6 +115,14 @@ def env_init_local_dotenv(project_path: str, env_vars: dict, override_env_vars: 
 def random_password(n=10):
     return ''.join(random.choices(string.digits, k=1)+random.choices(string.ascii_lowercase, k=1) +
                    random.choices(string.ascii_uppercase, k=1)+random.choices(string.ascii_letters + string.digits, k=n-3))
+
+
+def get_stack_output(output_key: str) -> str:
+    cloudformation = boto3.client('cloudformation')
+    response = cloudformation.describe_stacks(StackName=get_stack_name())
+    outputs = response['Stacks'][0]['Outputs']
+    output_value = [output['OutputValue'] for output in outputs if output['OutputKey'] == output_key]
+    return output_value[0] if output_value else None
 
 if __name__ == '__main__':
     main()

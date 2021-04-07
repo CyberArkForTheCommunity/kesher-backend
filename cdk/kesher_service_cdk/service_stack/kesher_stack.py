@@ -2,7 +2,8 @@ import getpass
 
 from aws_cdk import core
 
-from kesher_service_cdk.service_stack.kesher_construct import KesherServiceEnvironment, get_stack_name
+from kesher_service_cdk.service_stack.kesher_construct import KesherServiceEnvironment
+from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 
 from .auth_construct import KesherAuth
 

@@ -3,17 +3,21 @@
 # pylint: disable=invalid-name,ungrouped-imports
 
 import os
+import sys
+
 from aws_cdk import core
 from boto3 import client, session
-from kesher_service_cdk.service_stack.stack_utils import get_stack_name
-from kesher_service_cdk.service_stack.kesher_stack import KesherStack
-from kesher_service_cdk.service_stack.constants import BASE_NAME
+
+sys.path.append(os.getcwd())
+
+from cdk_global.kesher_global_stack import KesherGlobalStack
+
 
 account = client('sts').get_caller_identity()['Account']
 region = session.Session().region_name
 app = core.App()
-kesher_stack = KesherStack(
-    app, get_stack_name(),
+kesher_stack = KesherGlobalStack(
+    app, 'KesherGlobalStack',
     env=core.Environment(account=os.environ.get("AWS_DEFAULT_ACCOUNT", account), region=os.environ.get("AWS_DEFAULT_REGION", region)))
 
 app.synth()
