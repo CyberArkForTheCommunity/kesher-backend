@@ -27,6 +27,9 @@ class KesherServiceEnvironment(core.Construct):
                 "KesherServicePolicy":
                     iam.PolicyDocument(statements=[
                         iam.PolicyStatement(
+                            actions=["secretsmanager:GetSecretValue"],
+                            resources=["*"], effect=iam.Effect.ALLOW),
+                        iam.PolicyStatement(
                             actions=["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
                             resources=["arn:aws:logs:*:*:*"], effect=iam.Effect.ALLOW)
                     ])
