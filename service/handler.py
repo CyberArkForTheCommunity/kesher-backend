@@ -2,15 +2,13 @@ from datetime import datetime
 from decimal import Decimal
 from http import HTTPStatus
 
-from service.response_utils import build_error_response, build_response
-
-from aws_lambda_powertools.logging import logger
 from aws_lambda_context import LambdaContext
-from pydantic import ValidationError
 from aws_lambda_powertools import Logger
+from pydantic import ValidationError
 
 from service.dtos.kesher_dto import KesherDto
 from service.models.kesher import Kesher
+from service.response_utils import build_error_response, build_response
 
 logger = Logger()
 
