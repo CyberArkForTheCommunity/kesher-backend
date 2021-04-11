@@ -6,6 +6,7 @@ from kesher_service_cdk.service_stack.kesher_construct import KesherServiceEnvir
 from kesher_service_cdk.service_stack.stack_utils import get_stack_name
 
 from .auth_construct import KesherAuth
+from .db_construct import DatabaseConstruct
 
 class KesherStack(core.Stack):
 
@@ -15,3 +16,4 @@ class KesherStack(core.Stack):
 
         self.kesher_auth = KesherAuth(self, f"{get_stack_name()}Auth")
         self.kesher_service_env = KesherServiceEnvironment(self, "Service", self.kesher_auth.user_pool.user_pool_arn)
+        self.vpc = DatabaseConstruct(self, "db", self.kesher_auth.user_pool.user_pool_arn)

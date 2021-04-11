@@ -33,7 +33,6 @@ def admin_submit(event: dict, context: LambdaContext) -> dict:
         # TODO Email teachers - if not verified, send verify email, otherwise normal email
         # TODO - must handle all errors - presigned url errors (expiration, bad url), other errirs
         # TODO - email the user with the result - success, error (with details and instructions)
-
     except (ValidationError, TypeError) as err:
         return _build_error_response(err, HTTPStatus.BAD_REQUEST)
     except Exception as err:
