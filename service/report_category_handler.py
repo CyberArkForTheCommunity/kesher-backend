@@ -14,9 +14,6 @@ logger = Logger()
 # GET /api/categories
 @logger.inject_lambda_context(log_event=True)
 def get_report_categories_list(event: dict, context: LambdaContext) -> dict:
-    print(" in get_report_categories_list, returning stab")
-    print(f"event: {event}, context: {context}")
-
     try:
         logger.debug("in get_report_categories_list")
         query_results = execute_query(f"CALL get_categories_and_subcategories();")
