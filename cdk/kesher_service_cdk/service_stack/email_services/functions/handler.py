@@ -26,10 +26,14 @@ logger = Logger()
 def admin_submit(event: dict, context: LambdaContext) -> dict:
     try:
         pass
-        # kesher_dto: KesherDto = KesherDto.parse_raw(event["body"])
-        # now: Decimal = Decimal(datetime.now().timestamp())
-        # kesher: Kesher = Kesher(name=kesher_dto.name, created_date=now, updated_date=now)
-        # return _build_response(http_status=HTTPStatus.CREATED, body=kesher.json())
+        # TODO read email content
+        # TODO upload_s3_object_presigned - this is how we verify the sender
+        # TODO read csv content, verify data
+        # TODO Populate database
+        # TODO Email teachers - if not verified, send verify email, otherwise normal email
+        # TODO - must handle all errors - presigned url errors (expiration, bad url), other errirs
+        # TODO - email the user with the result - success, error (with details and instructions)
+
     except (ValidationError, TypeError) as err:
         return _build_error_response(err, HTTPStatus.BAD_REQUEST)
     except Exception as err:
